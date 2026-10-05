@@ -1,4 +1,4 @@
-import Planner from "@/components/planner";
+import SiteEntry from "@/components/site-entry";
 export default function Page() {
-  return <Planner />;
+  return <SiteEntry />;
 }

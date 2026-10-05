@@ -42,11 +42,13 @@ import { addFamily, relationships } from "@/lib/families";
 
 import Onboarding from "./onboarding";
 import Partner from "./partner";
+import InvitationManager from "./invitation-manager";
 import { palettes } from "@/lib/palettes";
 const nav = [
   ["Overview", LayoutDashboard],
   ["Checklist", CheckSquare],
   ["Guests & RSVPs", Users],
+  ["Invitations", Heart],
   ["Seating studio", Armchair],
   ["Budget", Wallet],
   ["Church Ceremony", Heart],
@@ -405,7 +407,9 @@ export default function Planner() {
       setError(error.message);
       return;
     }
-    setInviteLink(`${location.origin}${basePath}/?invite=${encodeURIComponent(data)}`);
+    setInviteLink(
+      `${location.origin}${basePath}/?invite=${encodeURIComponent(data)}`,
+    );
     navigate("Event settings");
   }
   async function finishSetup(draft: State, partnerEmail: string) {
@@ -1398,6 +1402,9 @@ export default function Planner() {
                 demo={demo}
               />
             </section>
+          )}
+          {page === "Invitations" && (
+            <InvitationManager state={state} demo={demo} />
           )}
           <footer className="page-footer">
             <span className="footer-couple">
