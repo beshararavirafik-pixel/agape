@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 30632)
-Total output lines: 6359
-
 @import "tailwindcss";
 :root {
   --bg: #f4f2ed;
@@ -3377,7 +3374,137 @@ td select {
   padding: 0.6rem 0.75rem;
   border-radius: 0.8rem;
 }
-.church-selection-actions .chur…632 tokens truncated…uto;
+.church-selection-actions .church-remove {
+  color: #985b52;
+}
+.church-unassigned {
+  border-top: 1px solid #ddd4c680;
+  padding-top: 1rem;
+}
+.church-unassigned h4 {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin: 0 0 1rem;
+}
+.church-unassigned h4 small {
+  color: #9e8c73;
+}
+.church-unseated > div {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.church-unseated small {
+  font-size: 0.8rem;
+  color: #9c896c;
+}
+.church-unseated button {
+  margin-left: auto;
+  padding: 0.3rem;
+  border: 0;
+  background: transparent;
+}
+.church-unseated p {
+  font-size: 0.875rem;
+  color: #968673;
+}
+.church-chart-details {
+  margin-top: 1.5rem;
+  border: 1px solid #fff;
+  background: #ffffff70;
+  border-radius: 1.5rem;
+  padding: 1.25rem 1.5rem;
+}
+.church-chart-details summary {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.95rem;
+}
+.church-chart-details summary > span {
+  margin-left: auto;
+  color: #95836b;
+  font-size: 0.875rem;
+}
+.church-chart-details .chart-grid {
+  margin-top: 1.5rem;
+}
+@media (max-width: 1000px) {
+  .church-workbench {
+    grid-template-columns: minmax(0, 1fr) 270px;
+  }
+  .church-toolbar {
+    padding: 0.8rem;
+  }
+  .church-toolbar button,
+  .church-room-settings summary {
+    padding: 0.6rem;
+    font-size: 0.8rem;
+  }
+}
+@media (max-width: 760px) {
+  .church-workbench {
+    grid-template-columns: 1fr;
+  }
+  .church-studio-heading {
+    align-items: start;
+  }
+  .church-count {
+    padding: 0.6rem;
+    font-size: 0.75rem;
+  }
+  .church-canvas-footer > span {
+    max-width: 60%;
+    font-size: 0.75rem;
+  }
+  .church-toolbar {
+    flex-wrap: wrap;
+  }
+  .ceremony-tabs {
+    display: flex;
+    width: fit-content;
+  }
+  .ceremony-tabs button {
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+  }
+  .church-inspector {
+    padding: 1.25rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .church-item {
+    transition: none;
+  }
+}
+/* Keep the studio in one workspace instead of a long page. */
+.church-focus-workspace {
+  position: fixed;
+  inset: 100px 24px 16px;
+  z-index: 40;
+  background: #f0ece3;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 1rem 1.25rem;
+  border: 1px solid #fff9;
+  border-radius: 1.75rem;
+  box-shadow: 0 20px 60px #40302010;
+}
+.church-focus-workspace .church-studio-heading {
+  margin-bottom: 1rem;
+  flex-shrink: 0;
+}
+.church-focus-workspace .church-studio-heading h2 {
+  font-size: 1.8rem;
+}
+.church-back {
+  margin-left: auto;
   font-size: 0.875rem;
   border-radius: 999px;
 }
