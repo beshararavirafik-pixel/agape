@@ -1,3 +1,4 @@
+import { sitePath, basePath } from "@/lib/site-path";
 import { State, RecordItem, Guest, uid } from "./model";
 import { defaultChurchLayout } from "./church-layout";
 
@@ -261,7 +262,7 @@ export function completeSample(base: State): State {
           "Warm candlelight, linen napkins and gold accents.",
           "A gathered bouquet of white roses with olive foliage.",
         ][i],
-        url: "/images/reception.jpg",
+        url: sitePath("/images/reception.jpg"),
       }),
     ),
     ...[
@@ -275,7 +276,7 @@ export function completeSample(base: State): State {
           "Ivory linens, sage accents and brushed gold.",
           "A relaxed, glowing evening together.",
         ][i],
-        url: "/images/reception.jpg",
+        url: sitePath("/images/reception.jpg"),
       }),
     ),
     record("note", "A celebration that feels like us", {
@@ -292,7 +293,7 @@ export function completeSample(base: State): State {
     }),
     record("document", "Sample wedding-day guide", {
       notes: "A sample document to show how your notes and documents work.",
-      url: "/sample-wedding-guide.html",
+      url: sitePath("/sample-wedding-guide.html"),
     }),
   ];
   const seatingGuests = extra.filter((g) => g.rsvp !== "declined");

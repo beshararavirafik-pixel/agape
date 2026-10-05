@@ -1,4 +1,5 @@
 "use client";
+import { sitePath, basePath } from "@/lib/site-path";
 import { State } from "@/lib/model";
 import { dimensions } from "@/lib/layout";
 export default function Overview({
@@ -43,7 +44,7 @@ export default function Overview({
     <div className="overview">
       <section className="celebration-scene" aria-label="Your celebration">
         <img
-          src="/images/reception.jpg"
+          src={sitePath("/images/reception.jpg")}
           alt="White flowers and candlelight at a wedding reception"
           width={2400}
           height={1597}

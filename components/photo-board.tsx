@@ -1,4 +1,5 @@
 "use client";
+import { sitePath, basePath } from "@/lib/site-path";
 import { Plus } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { State, RecordItem, uid } from "@/lib/model";
@@ -27,7 +28,7 @@ function Photo({ r }: { r: RecordItem }) {
   }, [r.url, r.storage_path]);
   return url && !failed ? (
     <img
-      src={url}
+      src={sitePath(url)}
       alt={r.title}
       loading="lazy"
       onError={() => setFailed(true)}

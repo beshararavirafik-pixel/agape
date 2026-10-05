@@ -1,5 +1,5 @@
 "use client";
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   Search,
   Trash2,
@@ -53,6 +53,45 @@ export default function GuestList({
     [memberRole, setMemberRole] = useState("Relative"),
     [removed, setRemoved] = useState<RemovedGuests | null>(null),
     [expanded, setExpanded] = useState<string[]>([]);
+  const familyList = useRef<HTMLDivElement>(null);
+  const previousCards = useRef<Map<Element, DOMRect>>(new Map());
+  function sizeFamilyCards() {
+    const list = familyList.current;
+    if (!list || typeof ResizeObserver === "undefined") return;
+    list.dataset.flow = "true";
+    Array.from(list.children).forEach((card) => {
+      const element = card as HTMLElement;
+      element.style.gridRowEnd = `span ${Math.ceil((element.offsetHeight + 12) / 13)}`;
+    });
+  }
+  useEffect(() => {
+    const list = familyList.current;
+    if (!list || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(sizeFamilyCards);
+    Array.from(list.children).forEach((card) => observer.observe(card));
+    sizeFamilyCards();
+    return () => observer.disconnect();
+  }, [view, query, group, rsvp, seating, state.guests]);
+  function toggleFamily(name: string) {
+    previousCards.current = new Map(
+      Array.from(familyList.current?.children || []).map((card) => [card, card.getBoundingClientRect()]),
+    );
+    setExpanded((items) => items.includes(name) ? items.filter((id) => id !== name) : [...items, name]);
+  }
+  useLayoutEffect(() => {
+    sizeFamilyCards();
+    const before = previousCards.current;
+    previousCards.current = new Map();
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    before.forEach((old, card) => {
+      const next = card.getBoundingClientRect();
+      if (!next.width || !next.height || !old.width || !old.height || !card.animate) return;
+      card.animate([
+        { transform: `translate(${old.left - next.left}px, ${old.top - next.top}px) scale(${old.width / next.width}, ${old.height / next.height})`, transformOrigin: "top left" },
+        { transform: "translate(0, 0) scale(1, 1)", transformOrigin: "top left" },
+      ], { duration: 460, easing: "cubic-bezier(.22, 1.18, .36, 1)" });
+    });
+  }, [expanded]);
   const deletePanel = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!deleting && !familyPrimary && !addingToFamily && !renamingFamily)
@@ -539,6 +578,7 @@ export default function GuestList({
           ) : (
             <div
               key="families-view"
+              ref={familyList}
               className="household-list guest-view-surface"
             >
               {shownFamilies.map(
@@ -583,13 +623,7 @@ export default function GuestList({
                       <button
                         className="household-heading"
                         aria-expanded={expanded.includes(name)}
-                        onClick={() =>
-                          setExpanded((a) =>
-                            a.includes(name)
-                              ? a.filter((n) => n !== name)
-                              : [...a, name],
-                          )
-                        }
+                        onClick={() => toggleFamily(name)}
                       >
                         <span className="avatar">
                           {primary.name
@@ -626,6 +660,11 @@ export default function GuestList({
                     </div>
                     {expanded.includes(name) && (
                       <div className="table-scroll">
+                        <table className="guest-rows">
+                          <tbody>
+                            {members.map((g) => row(g, relationship(g.id)))}
+                          </tbody>
+                        </table>
                         <div className="family-local-actions">
                           {" "}
                           <button
@@ -652,11 +691,6 @@ export default function GuestList({
                             Rename family
                           </button>
                         </div>
-                        <table className="guest-rows">
-                          <tbody>
-                            {members.map((g) => row(g, relationship(g.id)))}
-                          </tbody>
-                        </table>
                       </div>
                     )}
                   </article>

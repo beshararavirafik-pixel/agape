@@ -1,4 +1,5 @@
 "use client";
+import { sitePath, basePath } from "@/lib/site-path";
 import { fluidChange } from "@/lib/motion";
 import { useEffect, useState, useRef, useCallback } from "react";
 import {
@@ -555,7 +556,7 @@ export default function Planner() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: location.origin,
+          redirectTo: `${location.origin}${basePath}/`,
           queryParams: { prompt: "select_account" },
         },
       });
@@ -580,7 +581,7 @@ export default function Planner() {
           })
         : authMode === "reset"
           ? await supabase.auth.resetPasswordForEmail(email, {
-              redirectTo: location.origin,
+              redirectTo: `${location.origin}${basePath}/`,
             })
           : await supabase.auth.signInWithPassword({ email, password });
     if (result.error) setError(loginErrorMessage(result.error, authMode));
@@ -1143,7 +1144,7 @@ export default function Planner() {
                           r.url &&
                           /^https:\/\//.test(r.url) && (
                             <a
-                              href={r.url}
+                              href={sitePath(r.url)}
                               target="_blank"
                               rel="noreferrer"
                               className="inspiration-link"
@@ -1166,7 +1167,7 @@ export default function Planner() {
                           /^https?:\/\//.test(r.url) && (
                             <a
                               className="text-button"
-                              href={r.url}
+                              href={sitePath(r.url)}
                               target="_blank"
                               rel="noreferrer"
                             >

@@ -22,33 +22,31 @@ export default function SoftCursor() {
       const editing = element?.closest(
         'textarea, input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), [contenteditable="true"]',
       );
-      if (editing) {
-        node.style.opacity = "0";
-        return;
-      }
       const control = element?.closest<HTMLElement>(
         'button:not(:disabled), a[href], summary, select, [role="button"], input[type="checkbox"], input[type="radio"]',
       );
       const box = control?.getBoundingClientRect();
+      // Reserve the morph for small controls; keep the arrow on larger surfaces.
       const magnet =
         box &&
-        box.width <= 600 &&
-        box.height <= 140 &&
+        box.width <= 120 &&
+        box.height <= 48 &&
+        !control?.matches('select, a[href], [role="button"]') &&
         !control?.closest("svg");
-      const width = magnet ? box.width + 8 : 16;
-      const height = magnet ? box.height + 8 : 16;
-      const left = magnet ? box.left - 4 : x - 8;
-      const top = magnet ? box.top - 4 : y - 8;
-      const radius = magnet
-        ? Math.max(
-            12,
-            parseFloat(getComputedStyle(control!).borderRadius) || 12,
-          )
-        : 50;
-      node.dataset.control = String(Boolean(magnet));
+      const width = editing ? 2 : magnet ? box.width : 16;
+      const height = editing ? 20 : magnet ? box.height : 21;
+      const left = editing ? x - 1 : magnet ? box.left : x - 2;
+      const top = editing ? y - 10 : magnet ? box.top : y - 2;
+      const radius = editing
+        ? "1px"
+        : magnet
+          ? getComputedStyle(control!).borderRadius
+          : "4px";
+      node.dataset.control = String(!editing && Boolean(magnet));
+      node.dataset.text = String(Boolean(editing));
       node.style.width = `${width}px`;
       node.style.height = `${height}px`;
-      node.style.borderRadius = `${radius}px`;
+      node.style.borderRadius = radius;
       node.style.transform = `translate3d(${left}px, ${top}px, 0)`;
       node.style.opacity = "1";
     };
@@ -91,5 +89,25 @@ export default function SoftCursor() {
       window.removeEventListener("blur", hide);
     };
   }, []);
-  return <div className="soft-pointer" ref={pointer} aria-hidden="true" />;
+  return (
+    <div className="soft-pointer" ref={pointer} aria-hidden="true">
+      <span className="soft-pointer-glass" />
+      <svg
+        className="soft-pointer-arrow"
+        width="16"
+        height="21"
+        viewBox="0 0 26 32"
+        aria-hidden="true"
+      >
+        <path
+          d="M4 6C4 3.1 6.2 2.6 8 4.2L20 14.8C22.1 16.6 21.6 18.5 18.9 18.7L14.3 19L17.4 25.3C18.1 26.8 17.5 28.2 16 28.8C14.5 29.4 13.2 28.7 12.5 27.4L9.4 21.2L7.4 23.6C5.7 25.6 4 24.8 4 22.2Z"
+          fill="rgba(36,42,48,0.18)"
+          stroke="white"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+      </svg>
+    </div>
+  );
 }
