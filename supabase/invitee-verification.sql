@@ -13,9 +13,10 @@ insert into public.invitation_settings(event_id,content) values('00000000-0000-4
 do $$declare invitation jsonb; t text; result jsonb; denied boolean;begin
  invitation:=public.create_guest_invitation('00000000-0000-4000-8000-000000000902',array['00000000-0000-4000-8000-000000000903'::uuid],'00000000-0000-4000-8000-000000000905','Test');t:=invitation->>'token';
  perform set_config('request.jwt.claim.sub','',true);
+ perform set_config('agape.test_token',t,true);
  result:=public.read_guest_invitation(t);
  if jsonb_array_length(result->'guests')<>1 or result::text like '%Private guest%' or result->'event' ? 'budget' then raise exception 'Privacy boundary failed';end if;
- if result->'clergy'->>'pew'<>'Pew 2' or jsonb_array_length(result->'clergy'->'assignments')<>1 or result::text like '%Other deacon prayer%' then raise exception 'Deacon privacy or assignment failed';end if;
+ if result->'clergy'->>'pew' is distinct from 'Pew 2' or jsonb_array_length(result->'clergy'->'assignments')<>1 or result::text like '%Other deacon prayer%' then raise exception 'Deacon privacy or assignment failed';end if;
  result:=public.reply_guest_invitation(t,'[{"id":"00000000-0000-4000-8000-000000000903","rsvp":"accepted","meal":"Vegetarian"}]');
  if result->'guests'->0->>'rsvp'<>'accepted' then raise exception 'RSVP did not persist';end if;
  denied:=false;begin perform public.reply_guest_invitation(t,'[{"id":"00000000-0000-4000-8000-000000000904","rsvp":"accepted"}]');exception when others then denied:=true;end;
@@ -27,9 +28,23 @@ do $$declare invitation jsonb; t text; result jsonb; denied boolean;begin
  update public.invitation_settings set content='{"deadline":"2000-01-01"}' where event_id='00000000-0000-4000-8000-000000000902';
  denied:=false;begin perform public.reply_guest_invitation(t,'[]');exception when others then denied:=true;end;
  if not denied then raise exception 'Deadline ignored';end if;
+ perform set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000901',true);
+ perform public.manage_guest_invitations('00000000-0000-4000-8000-000000000902',(invitation->>'id')::uuid);
  update private.guest_invitations set revoked=true where id=(invitation->>'id')::uuid;
  denied:=false;begin perform public.read_guest_invitation(t);exception when others then denied:=true;end;
  if not denied then raise exception 'Revoked link allowed';end if;
 end$$;
-select 'PASS: isolated guests, RSVP persistence, invalid tokens, cross-invitation protection, signed-in management, deadlines, revocation' as verification;
+select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000901',true);
+update public.invitation_settings set content='{"publish_assignments":true}' where event_id='00000000-0000-4000-8000-000000000902';
+select set_config('agape.test_token',public.create_guest_invitation('00000000-0000-4000-8000-000000000902',array['00000000-0000-4000-8000-000000000903'::uuid],'00000000-0000-4000-8000-000000000905','Anonymous fixture')->>'token',true);
+select set_config('request.jwt.claim.sub','',true);
+set local role anon;
+do $$declare result jsonb;begin
+ result:=public.read_guest_invitation(current_setting('agape.test_token'));
+ if result->'clergy'->>'pew' is distinct from 'Pew 2' then raise exception 'Anonymous assignment unavailable';end if;
+ result:=public.reply_guest_invitation(current_setting('agape.test_token'),'[{"id":"00000000-0000-4000-8000-000000000903","rsvp":"declined","meal":""}]');
+ if result->'guests'->0->>'rsvp' is distinct from 'declined' then raise exception 'Anonymous RSVP unavailable';end if;
+end$$;
+reset role;
+select 'PASS: anonymous guest access and replies, isolated guests and deacon assignments, invalid tokens, cross-invitation protection, signed-in management, deadlines, revocation' as verification;
 rollback;
