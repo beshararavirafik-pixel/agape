@@ -5,6 +5,7 @@ import "@fontsource-variable/outfit";
 import "@fontsource/instrument-serif/400.css";
 import "@fontsource/instrument-serif/400-italic.css";
 import "./globals.css";
+import "./invitation.css";
 import SoftCursor from "@/components/soft-cursor";
 export const metadata: Metadata = {
   title: "Agapē",
@@ -19,7 +20,13 @@ export const viewport: Viewport = {
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body style={{ "--reception-photo": `url("${sitePath("/images/reception.jpg")}")` } as React.CSSProperties}>
+      <body
+        style={
+          {
+            "--reception-photo": `url("${sitePath("/images/reception.jpg")}")`,
+          } as React.CSSProperties
+        }
+      >
         {children}
         <SoftCursor />
       </body>

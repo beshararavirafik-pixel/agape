@@ -1,6 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Heart, MapPin, Check, CalendarDays, ArrowUpRight } from "lucide-react";
+import {
+  Heart,
+  MapPin,
+  Check,
+  CalendarDays,
+  ArrowUpRight,
+  ArrowDown,
+} from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { sitePath } from "@/lib/site-path";
 export type InvitationContent = {
@@ -177,37 +184,86 @@ export default function InviteeView({
         `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}`;
   return (
     <main className="invitee-page">
-      <header className="invitee-brand brand">Agapē</header>
+      <header className="invitation-masthead">
+        <span>THE CELEBRATION</span>
+        <a className="brand" href="#invitation-top">
+          Agapē
+        </a>
+        <a href="#your-rsvp">
+          Kindly RSVP <ArrowUpRight size={14} />
+        </a>
+      </header>
       {demo && (
         <div className="invitee-demo">
           Sample invitation · responses are not sent
         </div>
       )}
-      <section className="invitee-hero">
-        {c.photo && /^https:\/\//.test(c.photo) && (
-          <img src={c.photo} alt="The couple" />
-        )}
-        <Heart size={25} />
-        <p>You’re invited</p>
-        <h1>
-          {data.event.partner_one}
-          <span>&</span>
-          {data.event.partner_two}
-        </h1>
-        <div className="invitee-date">
-          <CalendarDays size={16} />
-          {dateLabel(data.event.date)}
+      <section className="invitee-hero" id="invitation-top">
+        <img
+          className="invitation-cover"
+          src={
+            c.photo && /^https:\/\//.test(c.photo)
+              ? c.photo
+              : sitePath("/images/reception.jpg")
+          }
+          alt={
+            c.photo
+              ? "The couple"
+              : "Flowers and candlelight at a wedding reception"
+          }
+          fetchPriority="high"
+        />
+        <div className="invitation-film" />
+        <div className="invitation-frame" />
+        <div className="invitation-hero-content">
+          <p className="invitation-overline">Together with our families</p>
+          <h1>
+            <span className="invitation-name">{data.event.partner_one}</span>
+            <em>&</em>
+            <span className="invitation-name">{data.event.partner_two}</span>
+          </h1>
+          <p className="invitation-welcome">
+            {c.welcome || "We would love for you to celebrate with us."}
+          </p>
+          <div className="invitee-date">{dateLabel(data.event.date)}</div>
+          <a href="#your-rsvp" className="invitation-hero-rsvp">
+            Join our celebration <ArrowUpRight size={16} />
+          </a>
         </div>
-        <p>{c.welcome || "Join us for a day filled with love."}</p>
+        <div className="invitation-photo-note">
+          A DAY TO REMEMBER. PEOPLE WE LOVE.
+        </div>
+        <a
+          href="#your-rsvp"
+          className="invitation-scroll"
+          aria-label="Scroll to your invitation"
+        >
+          <ArrowDown size={17} />
+        </a>
+      </section>
+      <div className="invitation-intro">
+        <div className="invitation-monogram">
+          {data.event.partner_one.slice(0, 1)}
+          <i>&</i>
+          {data.event.partner_two.slice(0, 1)}
+        </div>
+        <p>
+          A little moment.
+          <br />
+          <em>A lifetime of love.</em>
+        </p>
         <div className="invitee-palette">
           {data.event.palette?.map((color, i) => (
             <i key={i} style={{ background: color }} />
           ))}
         </div>
-      </section>
-      <section className="invitee-card">
+      </div>
+      <section className="invitee-card invitation-rsvp-card" id="your-rsvp">
         <div className="invitee-heading">
-          <h2>Your invitation</h2>
+          <div>
+            <p className="invitation-overline">WE SAVED YOU A PLACE</p>
+            <h2>Will you join us?</h2>
+          </div>
           {c.deadline && <small>Kindly reply by {dateLabel(c.deadline)}</small>}
         </div>
         {saved ? (
@@ -387,6 +443,13 @@ export default function InviteeView({
           )}
         </section>
       )}
+      <div className="invitation-signoff">
+        <Heart size={19} />
+        <p>With love,</p>
+        <h2>
+          {data.event.partner_one} & {data.event.partner_two}
+        </h2>
+      </div>
       <footer className="brand invitee-brand">Agapē</footer>
       <a className="invitee-back" href={sitePath("/")}>
         Plan your celebration
