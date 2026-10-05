@@ -405,7 +405,7 @@ export default function Planner() {
       setError(error.message);
       return;
     }
-    setInviteLink(`${location.origin}/?invite=${encodeURIComponent(data)}`);
+    setInviteLink(`${location.origin}${basePath}/?invite=${encodeURIComponent(data)}`);
     navigate("Event settings");
   }
   async function finishSetup(draft: State, partnerEmail: string) {
@@ -577,7 +577,7 @@ export default function Planner() {
         ? await supabase.auth.signUp({
             email,
             password,
-            options: { emailRedirectTo: location.origin },
+            options: { emailRedirectTo: `${location.origin}${basePath}/` },
           })
         : authMode === "reset"
           ? await supabase.auth.resetPasswordForEmail(email, {
