@@ -15,8 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NEXT_PUBLIC_BASE_PATH: /agape
-      NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      NEXT_PUBLIC_SUPABASE_URL: "https://ljhihphbnxeiljeijilc.supabase.co"
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "sb_publishable_M6c6Q2g3L7bp7VwncZkafA_M5A75XOW"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
