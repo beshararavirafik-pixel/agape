@@ -453,6 +453,15 @@
 .font-romantic h1 {
   font-style: italic;
 }
+.font-cormorant-semibold h1 {
+  font-weight: 600;
+}
+.font-cormorant-italic h1,
+.font-bodoni-italic h1,
+.font-playfair-italic h1,
+.font-lora-italic h1 {
+  font-style: italic;
+}
 .font-modern h1 {
   font-weight: 300;
   letter-spacing: -0.05em;

@@ -64,6 +64,7 @@ test("every wedding palette produces readable ink and all font choices remain av
   }
   for (const [font] of weddingFonts)
     assert.equal(normalizeDesign({ font }).font, font);
+  assert.equal(weddingFonts.length, 16);
   assert.equal(weddingTemplates.length, 13);
   const midnight = palettes.find(([name]) =>
     name.startsWith("Midnight velvet"),

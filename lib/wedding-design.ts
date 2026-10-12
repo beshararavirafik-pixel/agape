@@ -14,7 +14,12 @@ export type WeddingDesign = {
     | "script"
     | "lora"
     | "outfit"
-    | "inter";
+    | "inter"
+    | "cormorant-semibold"
+    | "cormorant-italic"
+    | "bodoni-italic"
+    | "playfair-italic"
+    | "lora-italic";
   texture: "smooth" | "linen" | "paper" | "marble" | "silk" | "vellum" | "dots";
   shape: "arch" | "rounded" | "square";
   motif: "none" | "botanical" | "stars" | "frame" | "hearts" | "monogram";
@@ -242,6 +247,11 @@ export const fonts = {
   lora: '"Lora", serif',
   outfit: '"Outfit Variable", sans-serif',
   inter: '"Inter Variable", sans-serif',
+  "cormorant-semibold": '"Cormorant Garamond", serif',
+  "cormorant-italic": '"Cormorant Garamond", serif',
+  "bodoni-italic": '"Bodoni Moda", serif',
+  "playfair-italic": '"Playfair Display", serif',
+  "lora-italic": '"Lora", serif',
 };
 export const weddingFonts = [
   ["editorial", "Editorial · Instrument Serif"],
@@ -255,6 +265,11 @@ export const weddingFonts = [
   ["modern", "Clean · Manrope"],
   ["outfit", "Soft · Outfit"],
   ["inter", "Minimal · Inter"],
+  ["cormorant-semibold", "Cormorant · polished"],
+  ["cormorant-italic", "Cormorant · italic"],
+  ["bodoni-italic", "Bodoni · italic"],
+  ["playfair-italic", "Playfair · italic"],
+  ["lora-italic", "Lora · italic"],
 ] as const;
 function luminance(hex: string) {
   const rgb = [1, 3, 5]
