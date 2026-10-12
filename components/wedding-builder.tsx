@@ -69,7 +69,7 @@ export default function WeddingBuilder({
     [published, setPublished] = useState(false),
     [publicUrl, setPublicUrl] = useState("");
   const [paletteFamily, setPaletteFamily] = useState(paletteFamilies[0]);
-  const storageKey = `agape-wedding-design-${state.event.id}`;
+  const storageKey = demo ? "agape-wedding-design-demo" : `agape-wedding-design-${state.event.id}`;
   useEffect(() => {
     let active = true;
     const accept = (value: InvitationContent) => {
