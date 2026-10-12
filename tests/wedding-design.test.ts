@@ -4,7 +4,10 @@ import {
   defaultDesign,
   normalizeDesign,
   weddingStyle,
+  paletteDesign,
+  weddingFonts,
 } from "../lib/wedding-design";
+import { palettes } from "../lib/palettes";
 test("custom colors and typography remain bounded and unsafe photo schemes are rejected", () => {
   const d = normalizeDesign({
     paper: "url(https://example.com)",
@@ -30,4 +33,24 @@ test("custom colors and typography remain bounded and unsafe photo schemes are r
     (weddingStyle({ ink: "#112233" }) as Record<string, unknown>)["--w-ink"],
     "#112233",
   );
+});
+test("every wedding palette produces readable ink and all font choices remain available", () => {
+  const light = (hex: string) => {
+    const rgb = [1, 3, 5]
+      .map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+      .map((c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+    return rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722;
+  };
+  for (const [name, ...colors] of palettes) {
+    const d = paletteDesign(colors),
+      values = [light(d.paper), light(d.ink)].sort((a, b) => a - b);
+    assert.ok(
+      (values[1] + 0.05) / (values[0] + 0.05) >= 4.5,
+      `${name} is hard to read`,
+    );
+    assert.ok(colors.includes(d.paper));
+    assert.ok(colors.includes(d.accent));
+  }
+  for (const [font] of weddingFonts)
+    assert.equal(normalizeDesign({ font }).font, font);
 });

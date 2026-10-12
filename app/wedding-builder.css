@@ -348,7 +348,7 @@
 }
 .wedding-cover-content {
   position: relative;
-  text-align: center;
+  text-align: var(--w-align, center);
   max-width: 620px;
   width: 100%;
   animation: wedding-in 0.8s ease both;
@@ -390,6 +390,7 @@
   line-height: 1.7;
   font-size: 14px;
   white-space: pre-wrap;
+  font-family: var(--w-body-font);
 }
 .wedding-cover-action {
   display: inline-flex;
@@ -475,6 +476,136 @@
   margin: 20px auto;
   font-size: 14px;
   line-height: 1.9;
+  font-family: var(--w-body-font);
+}
+.builder-extra {
+  margin: 14px 0;
+  border: 1px solid #deded4;
+  border-radius: 14px;
+  padding: 12px;
+}
+.builder-extra summary {
+  cursor: pointer;
+  font-size: 12px;
+}
+.builder-extra[open] summary {
+  margin-bottom: 15px;
+}
+.builder-own-palette,
+.builder-palette-options button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #deded4;
+  border-radius: 12px;
+  background: #fafaf5;
+  padding: 12px;
+  font-size: 11px;
+}
+.builder-palette-options {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.builder-palette-options button[aria-pressed="true"] {
+  border-color: #566c4b;
+  background: #edf1e6;
+}
+.builder-palette-dots {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.builder-palette-dots i {
+  height: 15px;
+  width: 15px;
+  border-radius: 50%;
+  border: 1px solid #00000012;
+}
+.builder-match-style {
+  width: 100%;
+  font-size: 12px;
+}
+.texture-silk {
+  background-image:
+    linear-gradient(
+      130deg,
+      #ffffff55,
+      transparent 30%,
+      #ffffff22 42%,
+      transparent 70%
+    ),
+    repeating-linear-gradient(
+      135deg,
+      #ffffff12 0px,
+      #ffffff12 1px,
+      transparent 1px,
+      transparent 5px
+    );
+}
+.texture-vellum {
+  background-image:
+    radial-gradient(ellipse at 20% 0%, #ffffff66, transparent 65%),
+    radial-gradient(ellipse at 80% 100%, #ffffff44, transparent 65%);
+}
+.texture-dots {
+  background-image: radial-gradient(#aaa59a35 0.7px, transparent 0.7px);
+  background-size: 12px 12px;
+}
+.wedding-ornament {
+  transform: scale(var(--w-decoration-scale, 1));
+  transform-origin: center;
+}
+.hearts {
+  width: 70px;
+  height: 70px;
+  bottom: 25px;
+  right: 25px;
+}
+.wedding-seal {
+  width: 65px;
+  height: 65px;
+  border: 1px solid;
+  border-radius: 50%;
+  top: 35px;
+  right: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 22px var(--w-font);
+  gap: 3px;
+}
+.wedding-seal i {
+  font-size: 12px;
+}
+.layout-together h1 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: var(--w-justify, center);
+  gap: 0.15em;
+  font-size: calc(clamp(38px, 5vw, 78px) * var(--w-scale, 1));
+}
+.layout-together h1 em {
+  margin: 0;
+}
+.spacing-compact {
+  min-height: 510px;
+  padding-block: 45px;
+}
+.spacing-airy {
+  min-height: 750px;
+  padding-block: 90px;
+}
+.font-script h1 {
+  line-height: 1.2;
+}
+@container (max-width:400px) {
+  .layout-together h1 {
+    font-size: calc(36px * var(--w-scale, 1));
+  }
 }
 .wedding-site-section img {
   width: 100%;

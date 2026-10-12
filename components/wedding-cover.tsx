@@ -24,7 +24,7 @@ export default function WeddingCover({
   const d = normalizeDesign(design);
   return (
     <section
-      className={`wedding-cover texture-${d.texture} shape-${d.shape} font-${d.font} ${d.photoOpacity > 0 ? "has-photo" : ""}`}
+      className={`wedding-cover texture-${d.texture} shape-${d.shape} font-${d.font} layout-${d.layout} spacing-${d.spacing} ${d.photoOpacity > 0 ? "has-photo" : ""}`}
       style={weddingStyle(d)}
       id="invitation-top"
     >
@@ -34,7 +34,16 @@ export default function WeddingCover({
             className="wedding-cover-photo"
             src={d.photo || sitePath("/images/reception.jpg")}
             alt="Wedding celebration"
-            style={{ opacity: d.photoOpacity / 100 }}
+            style={{
+              opacity: d.photoOpacity / 100,
+              objectPosition: d.photoFocus,
+              filter:
+                d.photoFinish === "monochrome"
+                  ? "grayscale(1)"
+                  : d.photoFinish === "warm"
+                    ? "sepia(.35) saturate(.8)"
+                    : undefined,
+            }}
           />
           <div className="wedding-cover-shade" />
         </>
@@ -59,6 +68,27 @@ export default function WeddingCover({
           ✦<span>✧</span>✦
         </div>
       )}
+      {d.motif === "hearts" && (
+        <svg
+          className="wedding-ornament hearts"
+          viewBox="0 0 80 80"
+          aria-hidden="true"
+        >
+          <path
+            d="M40 62 C-4 35 18 6 40 27 C62 6 84 35 40 62Z"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.4"
+          />
+        </svg>
+      )}
+      {d.motif === "monogram" && (
+        <div className="wedding-ornament wedding-seal" aria-hidden="true">
+          {first.slice(0, 1)}
+          <i>&</i>
+          {second.slice(0, 1)}
+        </div>
+      )}
       <div className="wedding-cover-content">
         <p className="wedding-eyebrow">{d.overline}</p>
         <h1>
@@ -70,7 +100,7 @@ export default function WeddingCover({
         <p className="wedding-eyebrow">{date}</p>
         {action && (
           <a className="wedding-cover-action" href={href}>
-            {action}
+            {d.buttonLabel || action}
             <ArrowUpRight size={16} />
           </a>
         )}

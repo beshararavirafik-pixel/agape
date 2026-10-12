@@ -19,10 +19,14 @@ import {
 import type { State } from "@/lib/model";
 import { supabase } from "@/lib/supabase";
 import { basePath } from "@/lib/site-path";
+import { palettes } from "@/lib/palettes";
 import {
   defaultDesign,
   normalizeDesign,
   weddingTemplates,
+  weddingFonts,
+  fonts,
+  paletteDesign,
   type WeddingDesign,
   type WebsiteSection,
 } from "@/lib/wedding-design";
@@ -43,6 +47,7 @@ const startingSections: WebsiteSection[] = [
     text: "We’re so excited to share this day with our favorite people.",
   },
 ];
+const paletteFamilies = [...new Set(palettes.map((p) => p[0].split(" · ")[0]))];
 export default function WeddingBuilder({
   state,
   demo,
@@ -63,6 +68,7 @@ export default function WeddingBuilder({
   const [dirty, setDirty] = useState(false),
     [published, setPublished] = useState(false),
     [publicUrl, setPublicUrl] = useState("");
+  const [paletteFamily, setPaletteFamily] = useState(paletteFamilies[0]);
   const storageKey = `agape-wedding-design-${state.event.id}`;
   useEffect(() => {
     let active = true;
@@ -316,7 +322,9 @@ export default function WeddingBuilder({
                         borderColor: t.design.accent,
                       }}
                     >
-                      A<i>&</i>J
+                      {state.event.partner_one.slice(0, 1)}
+                      <i>&</i>
+                      {state.event.partner_two.slice(0, 1)}
                     </span>
                     <strong>{t.name}</strong>
                     <small>{t.note}</small>
@@ -324,25 +332,83 @@ export default function WeddingBuilder({
                 ))}
               </div>
               <h3>Palette</h3>
-              <div className="builder-colors">
-                {(
-                  [
-                    ["paper", "Paper"],
-                    ["ink", "Ink"],
-                    ["accent", "Accent"],
-                  ] as const
-                ).map(([k, label]) => (
-                  <label key={k}>
-                    <input
-                      aria-label={`${label} color`}
-                      type="color"
-                      value={design[k]}
-                      onChange={(e) => editDesign({ [k]: e.target.value })}
-                    />
-                    <span>{label}</span>
-                  </label>
-                ))}
-              </div>
+              <button
+                className="builder-own-palette"
+                onClick={() => editDesign(paletteDesign(state.event.palette))}
+              >
+                <span>Use our wedding colors</span>
+                <span className="builder-palette-dots">
+                  {state.event.palette
+                    .filter((c) => /^#[0-9a-f]{6}$/i.test(c))
+                    .map((c, i) => (
+                      <i key={i} style={{ background: c }} />
+                    ))}
+                </span>
+              </button>
+              <details className="builder-extra">
+                <summary>Explore wedding palettes</summary>
+                <label>
+                  Color family
+                  <select
+                    value={paletteFamily}
+                    onChange={(e) => setPaletteFamily(e.target.value)}
+                  >
+                    {paletteFamilies.map((f) => (
+                      <option key={f} value={f}>
+                        {f}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <div className="builder-palette-options">
+                  {palettes
+                    .filter((p) => p[0].split(" · ")[0] === paletteFamily)
+                    .map((p) => {
+                      const colors = paletteDesign(p.slice(1));
+                      return (
+                        <button
+                          key={p[0]}
+                          aria-label={`Use ${p[0]} palette`}
+                          aria-pressed={
+                            design.paper === colors.paper &&
+                            design.ink === colors.ink &&
+                            design.accent === colors.accent
+                          }
+                          onClick={() => editDesign(colors)}
+                        >
+                          <span>{p[0].split(" · ")[1]}</span>
+                          <span className="builder-palette-dots">
+                            {p.slice(1).map((c) => (
+                              <i key={c} style={{ background: c }} />
+                            ))}
+                          </span>
+                        </button>
+                      );
+                    })}
+                </div>
+              </details>
+              <details className="builder-extra">
+                <summary>Customize individual colors</summary>
+                <div className="builder-colors">
+                  {(
+                    [
+                      ["paper", "Paper"],
+                      ["ink", "Ink"],
+                      ["accent", "Accent"],
+                    ] as const
+                  ).map(([k, label]) => (
+                    <label key={k}>
+                      <input
+                        aria-label={`${label} color`}
+                        type="color"
+                        value={design[k]}
+                        onChange={(e) => editDesign({ [k]: e.target.value })}
+                      />
+                      <span>{label}</span>
+                    </label>
+                  ))}
+                </div>
+              </details>
               <label>
                 Typography
                 <select
@@ -353,10 +419,15 @@ export default function WeddingBuilder({
                     })
                   }
                 >
-                  <option value="editorial">Editorial serif</option>
-                  <option value="classic">Classic serif</option>
-                  <option value="modern">Modern sans</option>
-                  <option value="romantic">Romantic italic</option>
+                  {weddingFonts.map(([value, label]) => (
+                    <option
+                      key={value}
+                      value={value}
+                      style={{ fontFamily: fonts[value] }}
+                    >
+                      {label}
+                    </option>
+                  ))}
                 </select>
               </label>
               <label>
@@ -373,6 +444,9 @@ export default function WeddingBuilder({
                   <option value="linen">Woven linen</option>
                   <option value="paper">Handmade paper</option>
                   <option value="marble">Carrara marble</option>
+                  <option value="silk">Soft silk</option>
+                  <option value="vellum">Translucent vellum</option>
+                  <option value="dots">Pearl dots</option>
                 </select>
               </label>
               <label>
@@ -404,18 +478,148 @@ export default function WeddingBuilder({
                   <option value="frame">Fine border</option>
                   <option value="botanical">Botanical linework</option>
                   <option value="stars">Celestial stars</option>
+                  <option value="hearts">Heart linework</option>
+                  <option value="monogram">Our monogram</option>
                 </select>
               </label>
-              <label>
-                Name size{" "}
-                <input
-                  type="range"
-                  min="65"
-                  max="130"
-                  value={design.scale}
-                  onChange={(e) => editDesign({ scale: +e.target.value })}
-                />
-              </label>
+              <details className="builder-extra">
+                <summary>Fine-tune the design</summary>
+                <label>
+                  Names layout
+                  <select
+                    value={design.layout}
+                    onChange={(e) =>
+                      editDesign({
+                        layout: e.target.value as WeddingDesign["layout"],
+                      })
+                    }
+                  >
+                    <option value="stacked">One above the other</option>
+                    <option value="together">Together on one line</option>
+                  </select>
+                </label>
+                <label>
+                  Text alignment
+                  <select
+                    value={design.alignment}
+                    onChange={(e) =>
+                      editDesign({
+                        alignment: e.target.value as WeddingDesign["alignment"],
+                      })
+                    }
+                  >
+                    <option value="center">Centered</option>
+                    <option value="left">Left</option>
+                    <option value="right">Right</option>
+                  </select>
+                </label>
+                <label>
+                  Spacing
+                  <select
+                    value={design.spacing}
+                    onChange={(e) =>
+                      editDesign({
+                        spacing: e.target.value as WeddingDesign["spacing"],
+                      })
+                    }
+                  >
+                    <option value="compact">Cozy</option>
+                    <option value="balanced">Balanced</option>
+                    <option value="airy">Airy</option>
+                  </select>
+                </label>
+                <label>
+                  Body text
+                  <select
+                    value={design.bodyFont}
+                    onChange={(e) =>
+                      editDesign({
+                        bodyFont: e.target.value as WeddingDesign["bodyFont"],
+                      })
+                    }
+                  >
+                    <option value="simple">Clean & simple</option>
+                    <option value="serif">Classic & literary</option>
+                  </select>
+                </label>
+                <label>
+                  Photo focus
+                  <select
+                    value={design.photoFocus}
+                    onChange={(e) =>
+                      editDesign({
+                        photoFocus: e.target
+                          .value as WeddingDesign["photoFocus"],
+                      })
+                    }
+                  >
+                    <option value="top">Top</option>
+                    <option value="center">Middle</option>
+                    <option value="bottom">Bottom</option>
+                  </select>
+                </label>
+                <label>
+                  Photo finish
+                  <select
+                    value={design.photoFinish}
+                    onChange={(e) =>
+                      editDesign({
+                        photoFinish: e.target
+                          .value as WeddingDesign["photoFinish"],
+                      })
+                    }
+                  >
+                    <option value="natural">Natural</option>
+                    <option value="monochrome">Black & white</option>
+                    <option value="warm">Warm film</option>
+                  </select>
+                </label>
+                <label>
+                  Decoration size
+                  <input
+                    type="range"
+                    min="60"
+                    max="150"
+                    value={design.decorationSize}
+                    onChange={(e) =>
+                      editDesign({ decorationSize: +e.target.value })
+                    }
+                  />
+                </label>
+                <label>
+                  Name size{" "}
+                  <input
+                    type="range"
+                    min="65"
+                    max="130"
+                    value={design.scale}
+                    onChange={(e) => editDesign({ scale: +e.target.value })}
+                  />
+                </label>
+              </details>
+              {content[
+                mode === "website" ? "invitation_design" : "website_design"
+              ] && (
+                <button
+                  className="builder-match-style"
+                  onClick={() =>
+                    editDesign({
+                      ...normalizeDesign(
+                        content[
+                          mode === "website"
+                            ? "invitation_design"
+                            : "website_design"
+                        ],
+                      ),
+                      photo: design.photo,
+                      message: design.message,
+                      overline: design.overline,
+                    })
+                  }
+                >
+                  Match {mode === "website" ? "invitation" : "website"} style
+                </button>
+              )}
               <label>
                 Photo presence{" "}
                 <input
@@ -447,6 +651,19 @@ export default function WeddingBuilder({
                   maxLength={500}
                   value={design.message}
                   onChange={(e) => editDesign({ message: e.target.value })}
+                />
+              </label>
+              <label>
+                Button wording
+                <input
+                  placeholder={
+                    mode === "website"
+                      ? "Discover our day"
+                      : "Join our celebration"
+                  }
+                  maxLength={50}
+                  value={design.buttonLabel}
+                  onChange={(e) => editDesign({ buttonLabel: e.target.value })}
                 />
               </label>
               <label>
