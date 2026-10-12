@@ -5,3 +5,6 @@ node_modules
 *.tsbuildinfo
 
 out/
+.vercel
+supabase/.temp/
+supabase/.branches/

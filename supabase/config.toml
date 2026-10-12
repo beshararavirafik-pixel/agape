@@ -1,0 +1,17 @@
+project_id = "agape"
+
+[auth]
+enabled = true
+site_url = "https://agape-xi.vercel.app/"
+additional_redirect_urls = ["https://agape-xi.vercel.app/", "http://localhost:3000/", "http://127.0.0.1:3000/", "https://beshararavirafik-pixel.github.io/agape/", "https://agape.beshara-ravirafik.chatgpt.site/", "https://agape.beshara-ravirafik.chatgpt.site"]
+enable_signup = true
+minimum_password_length = 8
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+double_confirm_changes = true
+
+# Configure Resend in the hosted Auth > Email > SMTP settings.
+# smtp.resend.com:465, username resend, password = Resend API key.
+# Keep the SMTP password in the provider dashboard, never in this file.

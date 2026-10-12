@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Copy, Plus, Eye, Link2, Trash2, Mail, Share2 } from "lucide-react";
 import { State } from "@/lib/model";
 import { supabase } from "@/lib/supabase";
+import { sendInvitationEmail } from "@/lib/send-invitation-email";
 import { basePath, sitePath } from "@/lib/site-path";
 import DateInput from "./date-input";
 import { InvitationContent } from "./invitee-view";
@@ -24,6 +25,8 @@ export default function InvitationManager({
     [error, setError] = useState(""),
     [query, setQuery] = useState(""),
     [copied, setCopied] = useState(false);
+  const [recipient, setRecipient] = useState("");
+  const [createdGuestIds, setCreatedGuestIds] = useState<string[]>([]);
   useEffect(() => {
     if (demo || !supabase) return;
     let active = true;
@@ -82,6 +85,11 @@ export default function InvitationManager({
     if (error) setError(error.message);
     else {
       setUrl(`${location.origin}${basePath}/?invitation=${data.token}`);
+      setCreatedGuestIds([...selected]);
+      setRecipient(
+        state.guests.find((g) => selected.includes(g.id) && g.email)?.email ||
+          "",
+      );
       const list = await supabase!.rpc("manage_guest_invitations", {
         e: state.event.id,
       });
@@ -332,7 +340,9 @@ export default function InvitationManager({
                     setCopied(true);
                   }
                 } catch (err) {
-                  if (!(err instanceof DOMException && err.name === "AbortError"))
+                  if (!(
+                    err instanceof DOMException && err.name === "AbortError"
+                  ))
                     setError("Copy the link from the field to share it.");
                 }
               }}
@@ -341,6 +351,61 @@ export default function InvitationManager({
             </button>
             {copied && <small role="status">Copied</small>}
           </div>
+        )}
+        {url && !demo && (
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setBusy(true);
+              setError("");
+              setNotice("");
+              try {
+                const result = await sendInvitationEmail(
+                  state.event.id,
+                  "guest",
+                  new URL(url).searchParams.get("invitation") || "",
+                  recipient,
+                );
+                setNotice(
+                  `Invitation submitted for delivery to ${result.recipient}.`,
+                );
+              } catch (error) {
+                setError(
+                  error instanceof Error
+                    ? error.message
+                    : "Email could not be sent. You can still copy the link.",
+                );
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            <label>
+              Email this invitation to
+              <select
+                required
+                value={recipient}
+                onChange={(e) => setRecipient(e.target.value)}
+              >
+                <option value="">Choose an included guest’s email</option>
+                {state.guests
+                  .filter((g) => createdGuestIds.includes(g.id) && g.email)
+                  .map((g) => (
+                    <option key={g.id} value={g.email}>
+                      {g.name} · {g.email}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <small>
+              Add email addresses in the guest directory and save your plan
+              before sending. Each recipient gets only this invitation’s private
+              link.
+            </small>
+            <button className="primary" disabled={busy || !recipient}>
+              <Mail size={16} /> {busy ? "Sending…" : "Email guest invitation"}
+            </button>
+          </form>
         )}
       </section>
       {!!links.length && (

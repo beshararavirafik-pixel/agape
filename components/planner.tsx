@@ -32,6 +32,7 @@ import Seating from "./seating";
 import PhotoBoard from "./photo-board";
 import DateInput from "./date-input";
 import { loginErrorMessage } from "@/lib/auth-errors";
+import { sendInvitationEmail } from "@/lib/send-invitation-email";
 import { formatDate, parseDate } from "@/lib/dates";
 import { savePlanningRecord } from "@/lib/vendor-budget";
 import GuestList from "./guest-list";
@@ -235,10 +236,25 @@ export default function Planner() {
       }
       return;
     }
-    supabase.auth.getSession().then(({ data }) => {
-      authUser.current = data.session?.user.id || null;
-      setUser(authUser.current);
-    });
+    const authError = new URLSearchParams(location.hash.slice(1)).get(
+      "error_description",
+    );
+    if (authError) {
+      setError(authError);
+      history.replaceState({}, "", location.pathname + location.search);
+    }
+    supabase.auth
+      .getSession()
+      .then(({ data, error }) => {
+        if (error) setError(loginErrorMessage(error, "login"));
+        authUser.current = data.session?.user.id || null;
+        setUser(authUser.current);
+      })
+      .catch(() => {
+        setError(
+          "Could not connect to your account. Check your connection and try again.",
+        );
+      });
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       if (_event === "PASSWORD_RECOVERY") setRecovery(true);
       const nextUser = session?.user.id || null;
@@ -578,26 +594,33 @@ export default function Planner() {
     if (!supabase) return;
     setBusy(true);
     setError("");
-    const result =
-      authMode === "signup"
-        ? await supabase.auth.signUp({
-            email,
-            password,
-            options: { emailRedirectTo: `${location.origin}${basePath}/` },
-          })
-        : authMode === "reset"
-          ? await supabase.auth.resetPasswordForEmail(email, {
-              redirectTo: `${location.origin}${basePath}/`,
-            })
-          : await supabase.auth.signInWithPassword({ email, password });
-    if (result.error) setError(loginErrorMessage(result.error, authMode));
-    else if (authMode !== "login")
-      setMessage(
+    try {
+      const result =
         authMode === "signup"
-          ? "Check your email to confirm your account."
-          : "Check your email for a password reset link.",
+          ? await supabase.auth.signUp({
+              email,
+              password,
+              options: { emailRedirectTo: `${location.origin}${basePath}/` },
+            })
+          : authMode === "reset"
+            ? await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: `${location.origin}${basePath}/`,
+              })
+            : await supabase.auth.signInWithPassword({ email, password });
+      if (result.error) setError(loginErrorMessage(result.error, authMode));
+      else if (authMode !== "login")
+        setMessage(
+          authMode === "signup"
+            ? "Check your email to confirm your account."
+            : "Check your email for a password reset link.",
+        );
+    } catch {
+      setError(
+        "Could not connect to your account. Check your connection and try again.",
       );
-    setBusy(false);
+    } finally {
+      setBusy(false);
+    }
   }
   function beginRecord(r?: RecordItem) {
     setEdit(r || null);
@@ -1399,6 +1422,13 @@ export default function Planner() {
               <hr />
               <Partner
                 onInvite={invitePartner}
+                onEmail={() =>
+                  sendInvitationEmail(
+                    state.event.id,
+                    "partner",
+                    new URL(inviteLink).searchParams.get("invite") || "",
+                  )
+                }
                 link={inviteLink}
                 isOwner={demo || state.event.owner_id === user}
                 demo={demo}

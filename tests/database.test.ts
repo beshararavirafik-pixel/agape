@@ -10,14 +10,14 @@ test("migration, atomic saves, revision conflicts, and cross-event seating const
   );
   await db.exec(
     readFileSync(
-      new URL("../supabase/migrations/001_foundation.sql", import.meta.url),
+      new URL("../supabase/migrations/20260930161250_event_planning_foundation.sql", import.meta.url),
       "utf8",
     ),
   );
   await db.exec(
     readFileSync(
       new URL(
-        "../supabase/migrations/002_couple_collaboration.sql",
+        "../supabase/migrations/20260930163423_couple_collaboration_and_guest_groups.sql",
         import.meta.url,
       ),
       "utf8",
@@ -26,7 +26,7 @@ test("migration, atomic saves, revision conflicts, and cross-event seating const
   await db.exec(
     readFileSync(
       new URL(
-        "../supabase/migrations/003_layout_family_and_ceremony.sql",
+        "../supabase/migrations/20260930181405_layout_family_and_ceremony.sql",
         import.meta.url,
       ),
       "utf8",
@@ -35,7 +35,7 @@ test("migration, atomic saves, revision conflicts, and cross-event seating const
   await db.exec(
     readFileSync(
       new URL(
-        "../supabase/migrations/20260930201627_family_display_names.sql",
+        "../supabase/migrations/20260930201722_family_display_names.sql",
         import.meta.url,
       ),
       "utf8",

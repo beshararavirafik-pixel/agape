@@ -1,6 +1,17 @@
 import type { NextConfig } from "next";
+if (
+  process.env.VERCEL &&
+  (!process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !(
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ))
+) {
+  throw new Error(
+    "Set the public Supabase URL and publishable key in Vercel before deploying.",
+  );
+}
 const nextConfig: NextConfig = {
-  output: "export",
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || "",
   async headers() {
     return [
