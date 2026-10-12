@@ -165,7 +165,7 @@ export function paletteDesign(
   colors: string[],
 ): Pick<WeddingDesign, "paper" | "ink" | "accent"> {
   const valid = colors.filter((c) => /^#[0-9a-f]{6}$/i.test(c));
-  if (!valid.length) return defaultDesign;
+  if (!valid.length) return { paper: defaultDesign.paper, ink: defaultDesign.ink, accent: defaultDesign.accent };
   const sorted = [...valid].sort((a, b) => luminance(a) - luminance(b));
   const paper = sorted[sorted.length - 1];
   const contrast = (luminance(paper) + 0.05) / (luminance(sorted[0]) + 0.05);

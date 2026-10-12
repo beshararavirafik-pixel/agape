@@ -311,6 +311,7 @@ export default function WeddingBuilder({
                         photo: design.photo,
                         message: design.message,
                         overline: design.overline,
+                        buttonLabel: design.buttonLabel,
                       })
                     }
                   >
@@ -614,6 +615,7 @@ export default function WeddingBuilder({
                       photo: design.photo,
                       message: design.message,
                       overline: design.overline,
+                          buttonLabel: design.buttonLabel,
                     })
                   }
                 >
