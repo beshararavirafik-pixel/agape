@@ -172,6 +172,9 @@
   background: #e7e6df;
   padding: 16px;
 }
+.builder-preview-panel.cover-preview-panel { position:sticky; top:24px; }
+.style-preview .wedding-site-section,.style-preview .wedding-site-footer,.style-preview .wedding-site-nav nav { display:none; }
+@media(max-width:650px) { .builder-preview-panel.cover-preview-panel { position:static; } }
 .builder-preview-panel > header {
   justify-content: space-between;
   font-size: 12px;

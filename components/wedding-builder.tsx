@@ -802,11 +802,11 @@ export default function WeddingBuilder({
           )}
         </aside>
         <section
-          className="builder-preview-panel"
+          className={`builder-preview-panel ${panel === "design" ? "cover-preview-panel" : ""}`}
           aria-label="Live design preview"
         >
           <header>
-            <span>Live preview</span>
+            <span>{panel === "design" ? "Live cover preview" : "Live website preview"}</span>
             <div>
               <button
                 aria-label="Desktop preview"
@@ -825,7 +825,7 @@ export default function WeddingBuilder({
             </div>
           </header>
           <div
-            className={`builder-preview ${phone ? "phone-preview" : ""}`}
+            className={`builder-preview ${phone ? "phone-preview" : ""} ${panel === "design" ? "style-preview" : ""}`}
             onClick={(event) => {
               const anchor = (
                 event.target as HTMLElement
