@@ -68,8 +68,8 @@ test("first-time setup accepts an undecided date and carries partner invitation 
   assert.equal(result!.state.event.partner_one, "Ravi");
   assert.equal(result!.state.event.budget, 45000);
   assert.equal(result!.email, "mia@example.com");
-  assert.equal(palettes.length, 60);
-  assert.equal(new Set(palettes.map((p) => p.slice(1).join(","))).size, 60);
+  assert.equal(palettes.length, 72);
+  assert.equal(new Set(palettes.map((p) => p.slice(1).join(","))).size, 72);
   cleanup();
   dom.window.close();
 });

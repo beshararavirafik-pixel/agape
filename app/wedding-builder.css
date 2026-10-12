@@ -65,6 +65,18 @@
   font-size: 15px;
   margin: 24px 0 14px;
 }
+.builder-hint,
+.builder-selection-note {
+  margin: -5px 0 14px;
+  color: #74766b;
+  font-size: 11px;
+  line-height: 1.55;
+}
+.builder-selection-note {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f0eee8;
+}
 .builder-controls label {
   display: flex;
   flex-direction: column;
@@ -146,6 +158,39 @@
   font-size: 9px;
   color: #74766b;
 }
+.builder-more-templates summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.builder-more-templates summary span {
+  color: #74766b;
+  font-size: 10px;
+}
+.builder-more-templates .builder-templates {
+  margin-top: 14px;
+}
+.builder-preview [data-edit-item] {
+  cursor: pointer;
+  transition:
+    outline-color 150ms ease,
+    box-shadow 150ms ease;
+}
+.builder-preview [data-edit-item]:hover {
+  outline: 1px solid color-mix(in srgb, var(--w-accent), transparent 35%);
+  outline-offset: 3px;
+}
+.builder-preview[data-active-edit="opening"] [data-edit-item="opening"],
+.builder-preview[data-active-edit="names"] [data-edit-item="names"],
+.builder-preview[data-active-edit="message"] [data-edit-item="message"],
+.builder-preview[data-active-edit="button"] [data-edit-item="button"],
+.builder-preview[data-active-edit="photo"] [data-edit-item="photo"],
+.builder-preview[data-active-edit="color:paper"] [data-edit-item="color:paper"],
+.builder-preview[data-active-edit="decoration"] [data-edit-item="decoration"] {
+  outline: 1px solid var(--w-accent);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--w-accent), transparent 88%);
+}
 .builder-colors {
   display: flex;
   gap: 22px;
@@ -172,9 +217,20 @@
   background: #e7e6df;
   padding: 16px;
 }
-.builder-preview-panel.cover-preview-panel { position:sticky; top:24px; }
-.style-preview .wedding-site-section,.style-preview .wedding-site-footer,.style-preview .wedding-site-nav nav { display:none; }
-@media(max-width:650px) { .builder-preview-panel.cover-preview-panel { position:static; } }
+.builder-preview-panel.cover-preview-panel {
+  position: sticky;
+  top: 24px;
+}
+.style-preview .wedding-site-section,
+.style-preview .wedding-site-footer,
+.style-preview .wedding-site-nav nav {
+  display: none;
+}
+@media (max-width: 650px) {
+  .builder-preview-panel.cover-preview-panel {
+    position: static;
+  }
+}
 .builder-preview-panel > header {
   justify-content: space-between;
   font-size: 12px;
@@ -344,7 +400,7 @@
 .wedding-cover-frame {
   position: absolute;
   inset: 20px;
-  border: 1px solid var(--w-accent);
+  border: 1px solid var(--w-palette-5, var(--w-accent));
   border-radius: inherit;
   opacity: 0.55;
   pointer-events: none;
@@ -560,6 +616,15 @@
 .wedding-ornament {
   transform: scale(var(--w-decoration-scale, 1));
   transform-origin: center;
+}
+.wedding-ornament.botanical {
+  color: var(--w-palette-4, var(--w-accent));
+}
+.wedding-ornament.hearts {
+  color: var(--w-palette-3, var(--w-accent));
+}
+.wedding-ornament.stars {
+  color: var(--w-palette-5, var(--w-accent));
 }
 .hearts {
   width: 70px;

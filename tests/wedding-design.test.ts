@@ -6,6 +6,7 @@ import {
   weddingStyle,
   paletteDesign,
   weddingFonts,
+  weddingTemplates,
 } from "../lib/wedding-design";
 import { palettes } from "../lib/palettes";
 test("custom colors and typography remain bounded and unsafe photo schemes are rejected", () => {
@@ -50,7 +51,26 @@ test("every wedding palette produces readable ink and all font choices remain av
     );
     assert.ok(colors.includes(d.paper));
     assert.ok(colors.includes(d.accent));
+    assert.deepEqual(
+      d.paletteColors.slice(0, colors.length),
+      colors,
+      `${name} keeps every palette color`,
+    );
+    assert.ok(
+      d.paletteColors.includes(d.ink),
+      `${name} previews its text color`,
+    );
+    assert.ok(colors.includes(d.ink) || d.paletteColors.length === 6);
   }
   for (const [font] of weddingFonts)
     assert.equal(normalizeDesign({ font }).font, font);
+  assert.equal(weddingTemplates.length, 13);
+  const midnight = palettes.find(([name]) =>
+    name.startsWith("Midnight velvet"),
+  )!;
+  const midnightDesign = paletteDesign(midnight.slice(1), midnight[0]);
+  assert.ok(light(midnightDesign.paper) < light(midnightDesign.ink));
+  assert.ok(
+    new Set(weddingTemplates.map((template) => template.name)).size === 13,
+  );
 });

@@ -35,13 +35,17 @@ export function WebsiteCanvas({ data }: { data: WeddingWebsiteData }) {
       style={weddingStyle(d)}
     >
       <header className="wedding-site-nav">
-        <a href="#invitation-top">
+        <a href="#invitation-top" data-edit-item="monogram">
           {data.event.partner_one.slice(0, 1)} &{" "}
           {data.event.partner_two.slice(0, 1)}
         </a>
         <nav>
           {sections.map((s) => (
-            <a key={s.id} href={`#section-${s.id}`}>
+            <a
+              key={s.id}
+              href={`#section-${s.id}`}
+              data-edit-item={`section:${s.id}:title`}
+            >
               {s.title}
             </a>
           ))}
@@ -90,11 +94,31 @@ function WebsiteBlock({
     <section
       className={`wedding-site-section block-${s.type}`}
       id={`section-${s.id}`}
+      data-edit-item={`section:${s.id}:title`}
     >
-      <span className="wedding-eyebrow">OUR CELEBRATION</span>
-      <h2>{s.title}</h2>
-      {safeImage && <img src={s.image} alt={s.title} loading="lazy" />}
-      {s.text && <p className="wedding-section-text">{s.text}</p>}
+      <span
+        className="wedding-eyebrow"
+        data-edit-item={`section:${s.id}:title`}
+      >
+        OUR CELEBRATION
+      </span>
+      <h2 data-edit-item={`section:${s.id}:title`}>{s.title}</h2>
+      {safeImage && (
+        <img
+          data-edit-item={`section:${s.id}:image`}
+          src={s.image}
+          alt={s.title}
+          loading="lazy"
+        />
+      )}
+      {s.text && (
+        <p
+          className="wedding-section-text"
+          data-edit-item={`section:${s.id}:text`}
+        >
+          {s.text}
+        </p>
+      )}
       {s.type === "details" && (
         <div className="wedding-event-grid">
           <article>

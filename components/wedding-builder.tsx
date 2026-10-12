@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -65,11 +65,15 @@ export default function WeddingBuilder({
     [future, setFuture] = useState<InvitationContent[]>([]),
     [message, setMessage] = useState(""),
     [error, setError] = useState("");
+  const [activeEdit, setActiveEdit] = useState("");
+  const lastChangeAt = useRef(0);
   const [dirty, setDirty] = useState(false),
     [published, setPublished] = useState(false),
     [publicUrl, setPublicUrl] = useState("");
   const [paletteFamily, setPaletteFamily] = useState(paletteFamilies[0]);
-  const storageKey = demo ? "agape-wedding-design-demo" : `agape-wedding-design-${state.event.id}`;
+  const storageKey = demo
+    ? "agape-wedding-design-demo"
+    : `agape-wedding-design-${state.event.id}`;
   useEffect(() => {
     let active = true;
     const accept = (value: InvitationContent) => {
@@ -111,7 +115,13 @@ export default function WeddingBuilder({
     };
   }, [state.event.id, demo, storageKey]);
   function change(next: InvitationContent) {
-    setPast((p) => [...p.slice(-39), content]);
+    // Keep one undo checkpoint per quick editing burst instead of cloning the
+    // entire invitation document for every typed character.
+    const now = Date.now();
+    if (now - lastChangeAt.current > 700) {
+      setPast((p) => [...p.slice(-39), content]);
+    }
+    lastChangeAt.current = now;
     setContent(next);
     setFuture([]);
     setDirty(true);
@@ -125,9 +135,39 @@ export default function WeddingBuilder({
       message: content.welcome || defaultDesign.message,
     },
   );
+  const ownPalette = paletteDesign(state.event.palette);
   function editDesign(patch: Partial<WeddingDesign>) {
-    change({ ...content, [key]: { ...design, ...patch } });
+    const editsColor = "paper" in patch || "ink" in patch || "accent" in patch;
+    change({
+      ...content,
+      [key]: {
+        ...design,
+        ...patch,
+        ...(editsColor && !("paletteColors" in patch)
+          ? { paletteColors: [] }
+          : {}),
+      },
+    });
   }
+  useEffect(() => {
+    if (panel !== "content" || !activeEdit) return;
+    const field = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-editor-field]"),
+    ).find((element) => element.dataset.editorField === activeEdit);
+    if (!field) return;
+    const sectionDetails = field.closest("details");
+    if (sectionDetails) sectionDetails.open = true;
+    const timer = window.setTimeout(() => {
+      field.scrollIntoView({ behavior: "smooth", block: "center" });
+      const input = field.matches("input, textarea, select")
+        ? field
+        : field.querySelector<HTMLElement>("input, textarea, select");
+      if (input instanceof HTMLElement) {
+        input.focus({ preventScroll: true });
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [activeEdit, panel]);
   async function save(publish?: boolean) {
     setBusy(true);
     setError("");
@@ -244,6 +284,7 @@ export default function WeddingBuilder({
             aria-label="Undo design change"
             disabled={!past.length || busy}
             onClick={() => {
+              lastChangeAt.current = 0;
               setFuture((f) => [content, ...f]);
               setContent(past[past.length - 1]);
               setPast((p) => p.slice(0, -1));
@@ -256,6 +297,7 @@ export default function WeddingBuilder({
             aria-label="Redo design change"
             disabled={!future.length || busy}
             onClick={() => {
+              lastChangeAt.current = 0;
               setPast((p) => [...p, content]);
               setContent(future[0]);
               setFuture((f) => f.slice(1));
@@ -295,14 +337,17 @@ export default function WeddingBuilder({
               aria-pressed={panel === "content"}
               onClick={() => setPanel("content")}
             >
-              Content
+              Edit content
             </button>
           </div>
           {panel === "design" ? (
             <>
-              <h3>Start with a feeling</h3>
+              <h3>Choose a starting design</h3>
+              <p className="builder-hint">
+                Pick a look first. You can change every detail afterward.
+              </p>
               <div className="builder-templates">
-                {weddingTemplates.map((t) => (
+                {weddingTemplates.slice(0, 6).map((t) => (
                   <button
                     key={t.name}
                     onClick={() =>
@@ -332,18 +377,52 @@ export default function WeddingBuilder({
                   </button>
                 ))}
               </div>
+              <details className="builder-extra builder-more-templates">
+                <summary>
+                  More designs <span>{weddingTemplates.length - 6} more</span>
+                </summary>
+                <div className="builder-templates">
+                  {weddingTemplates.slice(6).map((t) => (
+                    <button
+                      key={t.name}
+                      onClick={() =>
+                        editDesign({
+                          ...t.design,
+                          photo: design.photo,
+                          message: design.message,
+                          overline: design.overline,
+                          buttonLabel: design.buttonLabel,
+                        })
+                      }
+                    >
+                      <span
+                        className={`template-swatch texture-${t.design.texture}`}
+                        style={{
+                          backgroundColor: t.design.paper,
+                          color: t.design.ink,
+                          borderColor: t.design.accent,
+                        }}
+                      >
+                        {state.event.partner_one.slice(0, 1)}
+                        <i>&</i>
+                        {state.event.partner_two.slice(0, 1)}
+                      </span>
+                      <strong>{t.name}</strong>
+                      <small>{t.note}</small>
+                    </button>
+                  ))}
+                </div>
+              </details>
               <h3>Palette</h3>
               <button
                 className="builder-own-palette"
-                onClick={() => editDesign(paletteDesign(state.event.palette))}
+                onClick={() => editDesign(ownPalette)}
               >
                 <span>Use our wedding colors</span>
                 <span className="builder-palette-dots">
-                  {state.event.palette
-                    .filter((c) => /^#[0-9a-f]{6}$/i.test(c))
-                    .map((c, i) => (
-                      <i key={i} style={{ background: c }} />
-                    ))}
+                  {ownPalette.paletteColors.map((c, i) => (
+                    <i key={i} style={{ background: c }} />
+                  ))}
                 </span>
               </button>
               <details className="builder-extra">
@@ -365,7 +444,7 @@ export default function WeddingBuilder({
                   {palettes
                     .filter((p) => p[0].split(" · ")[0] === paletteFamily)
                     .map((p) => {
-                      const colors = paletteDesign(p.slice(1));
+                      const colors = paletteDesign(p.slice(1), p[0]);
                       return (
                         <button
                           key={p[0]}
@@ -373,13 +452,15 @@ export default function WeddingBuilder({
                           aria-pressed={
                             design.paper === colors.paper &&
                             design.ink === colors.ink &&
-                            design.accent === colors.accent
+                            design.accent === colors.accent &&
+                            design.paletteColors.join(",") ===
+                              colors.paletteColors.join(",")
                           }
                           onClick={() => editDesign(colors)}
                         >
                           <span>{p[0].split(" · ")[1]}</span>
                           <span className="builder-palette-dots">
-                            {p.slice(1).map((c) => (
+                            {colors.paletteColors.map((c) => (
                               <i key={c} style={{ background: c }} />
                             ))}
                           </span>
@@ -401,6 +482,7 @@ export default function WeddingBuilder({
                     <label key={k}>
                       <input
                         aria-label={`${label} color`}
+                        data-editor-field={`color:${k}`}
                         type="color"
                         value={design[k]}
                         onChange={(e) => editDesign({ [k]: e.target.value })}
@@ -468,6 +550,7 @@ export default function WeddingBuilder({
               <label>
                 Decorative element
                 <select
+                  data-editor-field="decoration"
                   value={design.motif}
                   onChange={(e) =>
                     editDesign({
@@ -484,7 +567,7 @@ export default function WeddingBuilder({
                 </select>
               </label>
               <details className="builder-extra">
-                <summary>Fine-tune the design</summary>
+                <summary>More design details</summary>
                 <label>
                   Names layout
                   <select
@@ -615,7 +698,7 @@ export default function WeddingBuilder({
                       photo: design.photo,
                       message: design.message,
                       overline: design.overline,
-                          buttonLabel: design.buttonLabel,
+                      buttonLabel: design.buttonLabel,
                     })
                   }
                 >
@@ -637,8 +720,23 @@ export default function WeddingBuilder({
             </>
           ) : (
             <>
-              <h3>The invitation</h3>
-              <label>
+              <h3>
+                {mode === "website"
+                  ? "Edit your cover"
+                  : "Edit your invitation"}
+              </h3>
+              <p className="builder-hint">
+                Click any text or detail in the preview to jump straight to its
+                control.
+              </p>
+              {(activeEdit === "names" ||
+                activeEdit === "date" ||
+                activeEdit === "monogram") && (
+                <p className="builder-selection-note">
+                  Couple names and the date come from your celebration details.
+                </p>
+              )}
+              <label data-editor-field="opening">
                 Opening line
                 <input
                   maxLength={120}
@@ -646,7 +744,7 @@ export default function WeddingBuilder({
                   onChange={(e) => editDesign({ overline: e.target.value })}
                 />
               </label>
-              <label>
+              <label data-editor-field="message">
                 Welcome message
                 <textarea
                   rows={3}
@@ -655,7 +753,7 @@ export default function WeddingBuilder({
                   onChange={(e) => editDesign({ message: e.target.value })}
                 />
               </label>
-              <label>
+              <label data-editor-field="button">
                 Button wording
                 <input
                   placeholder={
@@ -668,7 +766,7 @@ export default function WeddingBuilder({
                   onChange={(e) => editDesign({ buttonLabel: e.target.value })}
                 />
               </label>
-              <label>
+              <label data-editor-field="photo">
                 Cover photo URL
                 <input
                   type="url"
@@ -692,7 +790,7 @@ export default function WeddingBuilder({
                   {content.website_sections?.map((s, i) => (
                     <details className="builder-section-editor" key={s.id}>
                       <summary>{s.title || "Untitled section"}</summary>
-                      <label>
+                      <label data-editor-field={`section:${s.id}:title`}>
                         Heading
                         <input
                           maxLength={80}
@@ -702,7 +800,7 @@ export default function WeddingBuilder({
                           }
                         />
                       </label>
-                      <label>
+                      <label data-editor-field={`section:${s.id}:text`}>
                         Text
                         <textarea
                           rows={4}
@@ -713,7 +811,7 @@ export default function WeddingBuilder({
                           }
                         />
                       </label>
-                      <label>
+                      <label data-editor-field={`section:${s.id}:image`}>
                         Image URL
                         <input
                           type="url"
@@ -806,7 +904,11 @@ export default function WeddingBuilder({
           aria-label="Live design preview"
         >
           <header>
-            <span>{panel === "design" ? "Live cover preview" : "Live website preview"}</span>
+            <span>
+              {panel === "design"
+                ? "Live cover preview"
+                : "Click an item to edit it"}
+            </span>
             <div>
               <button
                 aria-label="Desktop preview"
@@ -826,7 +928,22 @@ export default function WeddingBuilder({
           </header>
           <div
             className={`builder-preview ${phone ? "phone-preview" : ""} ${panel === "design" ? "style-preview" : ""}`}
+            data-active-edit={activeEdit}
             onClick={(event) => {
+              const target = (event.target as HTMLElement).closest<HTMLElement>(
+                "[data-edit-item]",
+              );
+              if (target) {
+                event.preventDefault();
+                const item = target.dataset.editItem || "";
+                setActiveEdit(item);
+                setPanel(
+                  item.startsWith("color:") || item === "decoration"
+                    ? "design"
+                    : "content",
+                );
+                return;
+              }
               const anchor = (
                 event.target as HTMLElement
               ).closest<HTMLAnchorElement>('a[href^="#"]');
@@ -842,7 +959,7 @@ export default function WeddingBuilder({
               });
             }}
           >
-            {mode === "website" ? (
+            {mode === "website" && panel === "content" ? (
               <WebsiteCanvas data={{ event: state.event, content }} />
             ) : (
               <div className="builder-invitation-preview">
@@ -851,10 +968,17 @@ export default function WeddingBuilder({
                   first={state.event.partner_one}
                   second={state.event.partner_two}
                   date={websiteDate(state.event.date)}
+                  action={
+                    mode === "website"
+                      ? "Discover our day"
+                      : "Join our celebration"
+                  }
                 />
-                <p>
-                  Your guests’ RSVP and assignments appear below this cover.
-                </p>
+                {mode === "invitation" && (
+                  <p>
+                    Your guests’ RSVP and assignments appear below this cover.
+                  </p>
+                )}
               </div>
             )}
           </div>

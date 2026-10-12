@@ -145,7 +145,7 @@ test("guest assignment sync, decline unseating, guest creation and device persis
   const presets = document.querySelectorAll<HTMLButtonElement>(
     ".preset-grid button",
   );
-  assert.equal(presets.length, 60);
+  assert.equal(presets.length, 72);
   fireEvent.click(presets[12]);
   const active = JSON.parse(localStorage.getItem("ever-after-demo")!).event
     .palette;

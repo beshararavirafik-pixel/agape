@@ -27,11 +27,13 @@ export default function WeddingCover({
       className={`wedding-cover texture-${d.texture} shape-${d.shape} font-${d.font} layout-${d.layout} spacing-${d.spacing} ${d.photoOpacity > 0 ? "has-photo" : ""}`}
       style={weddingStyle(d)}
       id="invitation-top"
+      data-edit-item="color:paper"
     >
       {d.photoOpacity > 0 && (
         <>
           <img
             className="wedding-cover-photo"
+            data-edit-item="photo"
             src={d.photo || sitePath("/images/reception.jpg")}
             alt="Wedding celebration"
             style={{
@@ -48,10 +50,13 @@ export default function WeddingCover({
           <div className="wedding-cover-shade" />
         </>
       )}
-      {d.motif === "frame" && <div className="wedding-cover-frame" />}
+      {d.motif === "frame" && (
+        <div className="wedding-cover-frame" data-edit-item="decoration" />
+      )}
       {d.motif === "botanical" && (
         <svg
           className="wedding-ornament botanical"
+          data-edit-item="decoration"
           viewBox="0 0 100 160"
           aria-hidden="true"
         >
@@ -64,13 +69,18 @@ export default function WeddingCover({
         </svg>
       )}
       {d.motif === "stars" && (
-        <div className="wedding-ornament stars" aria-hidden="true">
+        <div
+          className="wedding-ornament stars"
+          data-edit-item="decoration"
+          aria-hidden="true"
+        >
           ✦<span>✧</span>✦
         </div>
       )}
       {d.motif === "hearts" && (
         <svg
           className="wedding-ornament hearts"
+          data-edit-item="decoration"
           viewBox="0 0 80 80"
           aria-hidden="true"
         >
@@ -83,23 +93,37 @@ export default function WeddingCover({
         </svg>
       )}
       {d.motif === "monogram" && (
-        <div className="wedding-ornament wedding-seal" aria-hidden="true">
+        <div
+          className="wedding-ornament wedding-seal"
+          data-edit-item="decoration"
+          aria-hidden="true"
+        >
           {first.slice(0, 1)}
           <i>&</i>
           {second.slice(0, 1)}
         </div>
       )}
       <div className="wedding-cover-content">
-        <p className="wedding-eyebrow">{d.overline}</p>
-        <h1>
+        <p className="wedding-eyebrow" data-edit-item="opening">
+          {d.overline}
+        </p>
+        <h1 data-edit-item="names">
           <span>{first}</span>
           <em>&</em>
           <span>{second}</span>
         </h1>
-        <p className="wedding-cover-message">{d.message}</p>
-        <p className="wedding-eyebrow">{date}</p>
+        <p className="wedding-cover-message" data-edit-item="message">
+          {d.message}
+        </p>
+        <p className="wedding-eyebrow" data-edit-item="date">
+          {date}
+        </p>
         {action && (
-          <a className="wedding-cover-action" href={href}>
+          <a
+            className="wedding-cover-action"
+            data-edit-item="button"
+            href={href}
+          >
             {d.buttonLabel || action}
             <ArrowUpRight size={16} />
           </a>
