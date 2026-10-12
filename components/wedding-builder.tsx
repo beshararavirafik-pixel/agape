@@ -331,23 +331,20 @@ export default function WeddingBuilder({
               aria-pressed={panel === "design"}
               onClick={() => setPanel("design")}
             >
-              Style
+              Design
             </button>
             <button
               aria-pressed={panel === "content"}
               onClick={() => setPanel("content")}
             >
-              Edit content
+              Words & photos
             </button>
           </div>
           {panel === "design" ? (
             <>
-              <h3>Choose a starting design</h3>
-              <p className="builder-hint">
-                Pick a look first. You can change every detail afterward.
-              </p>
+              <h3>Choose a look</h3>
               <div className="builder-templates">
-                {weddingTemplates.slice(0, 6).map((t) => (
+                {weddingTemplates.slice(0, 4).map((t) => (
                   <button
                     key={t.name}
                     onClick={() =>
@@ -379,10 +376,10 @@ export default function WeddingBuilder({
               </div>
               <details className="builder-extra builder-more-templates">
                 <summary>
-                  More designs <span>{weddingTemplates.length - 6} more</span>
+                  See all designs <span>{weddingTemplates.length - 4}</span>
                 </summary>
                 <div className="builder-templates">
-                  {weddingTemplates.slice(6).map((t) => (
+                  {weddingTemplates.slice(4).map((t) => (
                     <button
                       key={t.name}
                       onClick={() =>
@@ -413,7 +410,7 @@ export default function WeddingBuilder({
                   ))}
                 </div>
               </details>
-              <h3>Palette</h3>
+              <h3>Choose colors</h3>
               <button
                 className="builder-own-palette"
                 onClick={() => editDesign(ownPalette)}
@@ -426,7 +423,7 @@ export default function WeddingBuilder({
                 </span>
               </button>
               <details className="builder-extra">
-                <summary>Explore wedding palettes</summary>
+                <summary>Browse color palettes</summary>
                 <label>
                   Color family
                   <select
@@ -469,254 +466,261 @@ export default function WeddingBuilder({
                     })}
                 </div>
               </details>
-              <details className="builder-extra">
-                <summary>Customize individual colors</summary>
-                <div className="builder-colors">
-                  {(
-                    [
-                      ["paper", "Paper"],
-                      ["ink", "Ink"],
-                      ["accent", "Accent"],
-                    ] as const
-                  ).map(([k, label]) => (
-                    <label key={k}>
-                      <input
-                        aria-label={`${label} color`}
-                        data-editor-field={`color:${k}`}
-                        type="color"
-                        value={design[k]}
-                        onChange={(e) => editDesign({ [k]: e.target.value })}
-                      />
-                      <span>{label}</span>
-                    </label>
-                  ))}
-                </div>
-              </details>
-              <label>
-                Typography
-                <select
-                  value={design.font}
-                  onChange={(e) =>
-                    editDesign({
-                      font: e.target.value as WeddingDesign["font"],
-                    })
-                  }
-                >
-                  {weddingFonts.map(([value, label]) => (
-                    <option
-                      key={value}
-                      value={value}
-                      style={{ fontFamily: fonts[value] }}
+              <details className="builder-extra builder-fine-tune">
+                <summary>Fine-tune the design</summary>
+                <p className="builder-hint">
+                  Fonts, colors, textures, and other details
+                </p>
+                <details className="builder-extra">
+                  <summary>Pick individual colors</summary>
+                  <div className="builder-colors">
+                    {(
+                      [
+                        ["paper", "Paper"],
+                        ["ink", "Ink"],
+                        ["accent", "Accent"],
+                      ] as const
+                    ).map(([k, label]) => (
+                      <label key={k}>
+                        <input
+                          aria-label={`${label} color`}
+                          data-editor-field={`color:${k}`}
+                          type="color"
+                          value={design[k]}
+                          onChange={(e) => editDesign({ [k]: e.target.value })}
+                        />
+                        <span>{label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </details>
+                <label>
+                  Typography
+                  <select
+                    value={design.font}
+                    onChange={(e) =>
+                      editDesign({
+                        font: e.target.value as WeddingDesign["font"],
+                      })
+                    }
+                  >
+                    {weddingFonts.map(([value, label]) => (
+                      <option
+                        key={value}
+                        value={value}
+                        style={{ fontFamily: fonts[value] }}
+                      >
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Paper texture
+                  <select
+                    value={design.texture}
+                    onChange={(e) =>
+                      editDesign({
+                        texture: e.target.value as WeddingDesign["texture"],
+                      })
+                    }
+                  >
+                    <option value="smooth">Smooth</option>
+                    <option value="linen">Woven linen</option>
+                    <option value="paper">Handmade paper</option>
+                    <option value="marble">Carrara marble</option>
+                    <option value="silk">Soft silk</option>
+                    <option value="vellum">Translucent vellum</option>
+                    <option value="dots">Pearl dots</option>
+                  </select>
+                </label>
+                <label>
+                  Cover shape
+                  <select
+                    value={design.shape}
+                    onChange={(e) =>
+                      editDesign({
+                        shape: e.target.value as WeddingDesign["shape"],
+                      })
+                    }
+                  >
+                    <option value="arch">Arched</option>
+                    <option value="rounded">Soft corners</option>
+                    <option value="square">Straight edges</option>
+                  </select>
+                </label>
+                <label>
+                  Decorative element
+                  <select
+                    data-editor-field="decoration"
+                    value={design.motif}
+                    onChange={(e) =>
+                      editDesign({
+                        motif: e.target.value as WeddingDesign["motif"],
+                      })
+                    }
+                  >
+                    <option value="none">None</option>
+                    <option value="frame">Fine border</option>
+                    <option value="botanical">Botanical linework</option>
+                    <option value="stars">Celestial stars</option>
+                    <option value="hearts">Heart linework</option>
+                    <option value="monogram">Our monogram</option>
+                  </select>
+                </label>
+                <details className="builder-extra">
+                  <summary>More design details</summary>
+                  <label>
+                    Names layout
+                    <select
+                      value={design.layout}
+                      onChange={(e) =>
+                        editDesign({
+                          layout: e.target.value as WeddingDesign["layout"],
+                        })
+                      }
                     >
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Paper texture
-                <select
-                  value={design.texture}
-                  onChange={(e) =>
-                    editDesign({
-                      texture: e.target.value as WeddingDesign["texture"],
-                    })
-                  }
-                >
-                  <option value="smooth">Smooth</option>
-                  <option value="linen">Woven linen</option>
-                  <option value="paper">Handmade paper</option>
-                  <option value="marble">Carrara marble</option>
-                  <option value="silk">Soft silk</option>
-                  <option value="vellum">Translucent vellum</option>
-                  <option value="dots">Pearl dots</option>
-                </select>
-              </label>
-              <label>
-                Cover shape
-                <select
-                  value={design.shape}
-                  onChange={(e) =>
-                    editDesign({
-                      shape: e.target.value as WeddingDesign["shape"],
-                    })
-                  }
-                >
-                  <option value="arch">Arched</option>
-                  <option value="rounded">Soft corners</option>
-                  <option value="square">Straight edges</option>
-                </select>
-              </label>
-              <label>
-                Decorative element
-                <select
-                  data-editor-field="decoration"
-                  value={design.motif}
-                  onChange={(e) =>
-                    editDesign({
-                      motif: e.target.value as WeddingDesign["motif"],
-                    })
-                  }
-                >
-                  <option value="none">None</option>
-                  <option value="frame">Fine border</option>
-                  <option value="botanical">Botanical linework</option>
-                  <option value="stars">Celestial stars</option>
-                  <option value="hearts">Heart linework</option>
-                  <option value="monogram">Our monogram</option>
-                </select>
-              </label>
-              <details className="builder-extra">
-                <summary>More design details</summary>
-                <label>
-                  Names layout
-                  <select
-                    value={design.layout}
-                    onChange={(e) =>
+                      <option value="stacked">One above the other</option>
+                      <option value="together">Together on one line</option>
+                    </select>
+                  </label>
+                  <label>
+                    Text alignment
+                    <select
+                      value={design.alignment}
+                      onChange={(e) =>
+                        editDesign({
+                          alignment: e.target
+                            .value as WeddingDesign["alignment"],
+                        })
+                      }
+                    >
+                      <option value="center">Centered</option>
+                      <option value="left">Left</option>
+                      <option value="right">Right</option>
+                    </select>
+                  </label>
+                  <label>
+                    Spacing
+                    <select
+                      value={design.spacing}
+                      onChange={(e) =>
+                        editDesign({
+                          spacing: e.target.value as WeddingDesign["spacing"],
+                        })
+                      }
+                    >
+                      <option value="compact">Cozy</option>
+                      <option value="balanced">Balanced</option>
+                      <option value="airy">Airy</option>
+                    </select>
+                  </label>
+                  <label>
+                    Body text
+                    <select
+                      value={design.bodyFont}
+                      onChange={(e) =>
+                        editDesign({
+                          bodyFont: e.target.value as WeddingDesign["bodyFont"],
+                        })
+                      }
+                    >
+                      <option value="simple">Clean & simple</option>
+                      <option value="serif">Classic & literary</option>
+                    </select>
+                  </label>
+                  <label>
+                    Photo focus
+                    <select
+                      value={design.photoFocus}
+                      onChange={(e) =>
+                        editDesign({
+                          photoFocus: e.target
+                            .value as WeddingDesign["photoFocus"],
+                        })
+                      }
+                    >
+                      <option value="top">Top</option>
+                      <option value="center">Middle</option>
+                      <option value="bottom">Bottom</option>
+                    </select>
+                  </label>
+                  <label>
+                    Photo finish
+                    <select
+                      value={design.photoFinish}
+                      onChange={(e) =>
+                        editDesign({
+                          photoFinish: e.target
+                            .value as WeddingDesign["photoFinish"],
+                        })
+                      }
+                    >
+                      <option value="natural">Natural</option>
+                      <option value="monochrome">Black & white</option>
+                      <option value="warm">Warm film</option>
+                    </select>
+                  </label>
+                  <label>
+                    Decoration size
+                    <input
+                      type="range"
+                      min="60"
+                      max="150"
+                      value={design.decorationSize}
+                      onChange={(e) =>
+                        editDesign({ decorationSize: +e.target.value })
+                      }
+                    />
+                  </label>
+                  <label>
+                    Name size{" "}
+                    <input
+                      type="range"
+                      min="65"
+                      max="130"
+                      value={design.scale}
+                      onChange={(e) => editDesign({ scale: +e.target.value })}
+                    />
+                  </label>
+                </details>
+                {content[
+                  mode === "website" ? "invitation_design" : "website_design"
+                ] && (
+                  <button
+                    className="builder-match-style"
+                    onClick={() =>
                       editDesign({
-                        layout: e.target.value as WeddingDesign["layout"],
+                        ...normalizeDesign(
+                          content[
+                            mode === "website"
+                              ? "invitation_design"
+                              : "website_design"
+                          ],
+                        ),
+                        photo: design.photo,
+                        message: design.message,
+                        overline: design.overline,
+                        buttonLabel: design.buttonLabel,
                       })
                     }
                   >
-                    <option value="stacked">One above the other</option>
-                    <option value="together">Together on one line</option>
-                  </select>
-                </label>
+                    Match {mode === "website" ? "invitation" : "website"} style
+                  </button>
+                )}
                 <label>
-                  Text alignment
-                  <select
-                    value={design.alignment}
-                    onChange={(e) =>
-                      editDesign({
-                        alignment: e.target.value as WeddingDesign["alignment"],
-                      })
-                    }
-                  >
-                    <option value="center">Centered</option>
-                    <option value="left">Left</option>
-                    <option value="right">Right</option>
-                  </select>
-                </label>
-                <label>
-                  Spacing
-                  <select
-                    value={design.spacing}
-                    onChange={(e) =>
-                      editDesign({
-                        spacing: e.target.value as WeddingDesign["spacing"],
-                      })
-                    }
-                  >
-                    <option value="compact">Cozy</option>
-                    <option value="balanced">Balanced</option>
-                    <option value="airy">Airy</option>
-                  </select>
-                </label>
-                <label>
-                  Body text
-                  <select
-                    value={design.bodyFont}
-                    onChange={(e) =>
-                      editDesign({
-                        bodyFont: e.target.value as WeddingDesign["bodyFont"],
-                      })
-                    }
-                  >
-                    <option value="simple">Clean & simple</option>
-                    <option value="serif">Classic & literary</option>
-                  </select>
-                </label>
-                <label>
-                  Photo focus
-                  <select
-                    value={design.photoFocus}
-                    onChange={(e) =>
-                      editDesign({
-                        photoFocus: e.target
-                          .value as WeddingDesign["photoFocus"],
-                      })
-                    }
-                  >
-                    <option value="top">Top</option>
-                    <option value="center">Middle</option>
-                    <option value="bottom">Bottom</option>
-                  </select>
-                </label>
-                <label>
-                  Photo finish
-                  <select
-                    value={design.photoFinish}
-                    onChange={(e) =>
-                      editDesign({
-                        photoFinish: e.target
-                          .value as WeddingDesign["photoFinish"],
-                      })
-                    }
-                  >
-                    <option value="natural">Natural</option>
-                    <option value="monochrome">Black & white</option>
-                    <option value="warm">Warm film</option>
-                  </select>
-                </label>
-                <label>
-                  Decoration size
+                  Photo presence{" "}
                   <input
                     type="range"
-                    min="60"
-                    max="150"
-                    value={design.decorationSize}
+                    min="0"
+                    max="75"
+                    value={design.photoOpacity}
                     onChange={(e) =>
-                      editDesign({ decorationSize: +e.target.value })
+                      editDesign({ photoOpacity: +e.target.value })
                     }
-                  />
-                </label>
-                <label>
-                  Name size{" "}
-                  <input
-                    type="range"
-                    min="65"
-                    max="130"
-                    value={design.scale}
-                    onChange={(e) => editDesign({ scale: +e.target.value })}
                   />
                 </label>
               </details>
-              {content[
-                mode === "website" ? "invitation_design" : "website_design"
-              ] && (
-                <button
-                  className="builder-match-style"
-                  onClick={() =>
-                    editDesign({
-                      ...normalizeDesign(
-                        content[
-                          mode === "website"
-                            ? "invitation_design"
-                            : "website_design"
-                        ],
-                      ),
-                      photo: design.photo,
-                      message: design.message,
-                      overline: design.overline,
-                      buttonLabel: design.buttonLabel,
-                    })
-                  }
-                >
-                  Match {mode === "website" ? "invitation" : "website"} style
-                </button>
-              )}
-              <label>
-                Photo presence{" "}
-                <input
-                  type="range"
-                  min="0"
-                  max="75"
-                  value={design.photoOpacity}
-                  onChange={(e) =>
-                    editDesign({ photoOpacity: +e.target.value })
-                  }
-                />
-              </label>
             </>
           ) : (
             <>

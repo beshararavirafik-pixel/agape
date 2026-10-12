@@ -69,7 +69,11 @@
 }
 .builder-controls h3 {
   font-size: 15px;
-  margin: 24px 0 14px;
+  margin: 20px 0 12px;
+}
+.builder-panel-tabs button {
+  min-height: 40px;
+  font-size: 12px;
 }
 .builder-hint,
 .builder-selection-note {
@@ -565,6 +569,15 @@
   border: 1px solid #deded4;
   border-radius: 14px;
   padding: 12px;
+}
+.builder-fine-tune {
+  background: #f8f8f3;
+}
+.builder-fine-tune > .builder-hint {
+  margin: 8px 0 0;
+}
+.builder-fine-tune .builder-extra {
+  background: #fff;
 }
 .builder-extra summary {
   cursor: pointer;
