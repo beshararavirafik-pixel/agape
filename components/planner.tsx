@@ -43,12 +43,14 @@ import { addFamily, relationships } from "@/lib/families";
 import Onboarding from "./onboarding";
 import Partner from "./partner";
 import InvitationManager from "./invitation-manager";
+import WeddingBuilder from "./wedding-builder";
 import { palettes } from "@/lib/palettes";
 const nav = [
   ["Overview", LayoutDashboard],
   ["Checklist", CheckSquare],
   ["Guests & RSVPs", Users],
   ["Invitations", Heart],
+  ["Wedding Website", Images],
   ["Seating studio", Armchair],
   ["Budget", Wallet],
   ["Church Ceremony", Heart],
@@ -1405,6 +1407,9 @@ export default function Planner() {
           )}
           {page === "Invitations" && (
             <InvitationManager state={state} demo={demo} />
+          )}
+          {page === "Wedding Website" && (
+            <WeddingBuilder state={state} demo={demo} />
           )}
           <footer className="page-footer">
             <span className="footer-couple">

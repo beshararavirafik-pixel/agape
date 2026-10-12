@@ -6,6 +6,7 @@ import "@fontsource/instrument-serif/400.css";
 import "@fontsource/instrument-serif/400-italic.css";
 import "./globals.css";
 import "./invitation.css";
+import "./wedding-builder.css";
 import SoftCursor from "@/components/soft-cursor";
 export const metadata: Metadata = {
   title: "Agapē",

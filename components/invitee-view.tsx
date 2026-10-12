@@ -10,7 +10,10 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { sitePath } from "@/lib/site-path";
-export type InvitationContent = {
+import type { WebsiteSettings } from "@/lib/wedding-design";
+import { weddingStyle } from "@/lib/wedding-design";
+import WeddingCover from "./wedding-cover";
+export type InvitationContent = WebsiteSettings & {
   welcome?: string;
   photo?: string;
   deadline?: string;
@@ -126,7 +129,21 @@ export default function InviteeView({
     [busy, setBusy] = useState(false),
     [saved, setSaved] = useState(false);
   useEffect(() => {
-    if (demo) return;
+    if (demo) {
+      try {
+        const design = JSON.parse(
+          localStorage.getItem("agape-sample-invitation-design") || "null",
+        );
+        if (design)
+          setData({
+            ...preview,
+            content: { ...preview.content, invitation_design: design },
+          });
+      } catch {
+        /* Keep the sample invitation if a local draft is invalid. */
+      }
+      return;
+    }
     let active = true;
     if (!supabase) {
       setError("Invitations are temporarily unavailable.");
@@ -183,7 +200,12 @@ export default function InviteeView({
       c.deadline <
         `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}`;
   return (
-    <main className="invitee-page">
+    <main
+      className="invitee-page wedding-themed-invitation"
+      style={
+        c.invitation_design ? weddingStyle(c.invitation_design) : undefined
+      }
+    >
       <header className="invitation-masthead">
         <span>THE CELEBRATION</span>
         <a className="brand" href="#invitation-top">
@@ -198,49 +220,58 @@ export default function InviteeView({
           Sample invitation · responses are not sent
         </div>
       )}
-      <section className="invitee-hero" id="invitation-top">
-        <img
-          className="invitation-cover"
-          src={
-            c.photo && /^https:\/\//.test(c.photo)
-              ? c.photo
-              : sitePath("/images/reception.jpg")
-          }
-          alt={
-            c.photo
-              ? "The couple"
-              : "Flowers and candlelight at a wedding reception"
-          }
-          fetchPriority="high"
+      {c.invitation_design ? (
+        <WeddingCover
+          design={c.invitation_design}
+          first={data.event.partner_one}
+          second={data.event.partner_two}
+          date={dateLabel(data.event.date)}
         />
-        <div className="invitation-film" />
-        <div className="invitation-frame" />
-        <div className="invitation-hero-content">
-          <p className="invitation-overline">Together with our families</p>
-          <h1>
-            <span className="invitation-name">{data.event.partner_one}</span>
-            <em>&</em>
-            <span className="invitation-name">{data.event.partner_two}</span>
-          </h1>
-          <p className="invitation-welcome">
-            {c.welcome || "We would love for you to celebrate with us."}
-          </p>
-          <div className="invitee-date">{dateLabel(data.event.date)}</div>
-          <a href="#your-rsvp" className="invitation-hero-rsvp">
-            Join our celebration <ArrowUpRight size={16} />
+      ) : (
+        <section className="invitee-hero" id="invitation-top">
+          <img
+            className="invitation-cover"
+            src={
+              c.photo && /^https:\/\//.test(c.photo)
+                ? c.photo
+                : sitePath("/images/reception.jpg")
+            }
+            alt={
+              c.photo
+                ? "The couple"
+                : "Flowers and candlelight at a wedding reception"
+            }
+            fetchPriority="high"
+          />
+          <div className="invitation-film" />
+          <div className="invitation-frame" />
+          <div className="invitation-hero-content">
+            <p className="invitation-overline">Together with our families</p>
+            <h1>
+              <span className="invitation-name">{data.event.partner_one}</span>
+              <em>&</em>
+              <span className="invitation-name">{data.event.partner_two}</span>
+            </h1>
+            <p className="invitation-welcome">
+              {c.welcome || "We would love for you to celebrate with us."}
+            </p>
+            <div className="invitee-date">{dateLabel(data.event.date)}</div>
+            <a href="#your-rsvp" className="invitation-hero-rsvp">
+              Join our celebration <ArrowUpRight size={16} />
+            </a>
+          </div>
+          <div className="invitation-photo-note">
+            A DAY TO REMEMBER. PEOPLE WE LOVE.
+          </div>
+          <a
+            href="#your-rsvp"
+            className="invitation-scroll"
+            aria-label="Scroll to your invitation"
+          >
+            <ArrowDown size={17} />
           </a>
-        </div>
-        <div className="invitation-photo-note">
-          A DAY TO REMEMBER. PEOPLE WE LOVE.
-        </div>
-        <a
-          href="#your-rsvp"
-          className="invitation-scroll"
-          aria-label="Scroll to your invitation"
-        >
-          <ArrowDown size={17} />
-        </a>
-      </section>
+        </section>
+      )}
       <div className="invitation-intro">
         <div className="invitation-monogram">
           {data.event.partner_one.slice(0, 1)}
