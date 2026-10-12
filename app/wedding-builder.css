@@ -56,6 +56,12 @@
   align-items: start;
 }
 .builder-controls {
+  position: sticky;
+  top: 24px;
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   padding: 20px;
   background: #ffffffa8;
   border: 1px solid var(--studio-border);
@@ -217,9 +223,13 @@
   background: #e7e6df;
   padding: 16px;
 }
-.builder-preview-panel.cover-preview-panel {
+.builder-preview-panel {
   position: sticky;
   top: 24px;
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 .style-preview .wedding-site-section,
 .style-preview .wedding-site-footer,
@@ -227,8 +237,12 @@
   display: none;
 }
 @media (max-width: 650px) {
-  .builder-preview-panel.cover-preview-panel {
+  .builder-preview-panel,
+  .builder-controls {
     position: static;
+    max-height: none;
+    overflow: visible;
+    scrollbar-gutter: auto;
   }
 }
 .builder-preview-panel > header {
