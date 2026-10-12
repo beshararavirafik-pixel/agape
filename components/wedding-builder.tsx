@@ -343,6 +343,10 @@ export default function WeddingBuilder({
           {panel === "design" ? (
             <>
               <h3>Choose a look</h3>
+              <p className="builder-hint">
+                Click the welcome text or button on the invitation to edit it
+                there.
+              </p>
               <div className="builder-templates">
                 {weddingTemplates.slice(0, 4).map((t) => (
                   <button
@@ -934,6 +938,13 @@ export default function WeddingBuilder({
             className={`builder-preview ${phone ? "phone-preview" : ""} ${panel === "design" ? "style-preview" : ""}`}
             data-active-edit={activeEdit}
             onClick={(event) => {
+              const inlineText = (
+                event.target as HTMLElement
+              ).closest<HTMLElement>("[data-inline-edit]");
+              if (inlineText) {
+                event.preventDefault();
+                return;
+              }
               const target = (event.target as HTMLElement).closest<HTMLElement>(
                 "[data-edit-item]",
               );
@@ -972,6 +983,8 @@ export default function WeddingBuilder({
                   first={state.event.partner_one}
                   second={state.event.partner_two}
                   date={websiteDate(state.event.date)}
+                  editable={panel === "design"}
+                  onTextEdit={(field, value) => editDesign({ [field]: value })}
                   action={
                     mode === "website"
                       ? "Discover our day"

@@ -190,6 +190,19 @@
   outline: 1px solid color-mix(in srgb, var(--w-accent), transparent 35%);
   outline-offset: 3px;
 }
+.builder-preview [data-inline-edit] {
+  cursor: text;
+  caret-color: var(--w-accent);
+  border-radius: 4px;
+  transition: background-color 160ms ease;
+}
+.builder-preview [data-inline-edit]:hover {
+  background: color-mix(in srgb, var(--w-accent), transparent 92%);
+}
+.builder-preview [data-inline-edit]:focus {
+  outline: 2px solid color-mix(in srgb, var(--w-accent), transparent 35%);
+  outline-offset: 4px;
+}
 .builder-preview[data-active-edit="opening"] [data-edit-item="opening"],
 .builder-preview[data-active-edit="names"] [data-edit-item="names"],
 .builder-preview[data-active-edit="message"] [data-edit-item="message"],

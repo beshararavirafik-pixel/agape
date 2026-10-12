@@ -1,4 +1,5 @@
 "use client";
+import type { FocusEvent } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { sitePath } from "@/lib/site-path";
 import {
@@ -13,6 +14,8 @@ export default function WeddingCover({
   date,
   action = "Join our celebration",
   href = "#your-rsvp",
+  editable = false,
+  onTextEdit,
 }: {
   design?: Partial<WeddingDesign>;
   first: string;
@@ -20,8 +23,20 @@ export default function WeddingCover({
   date: string;
   action?: string;
   href?: string;
+  editable?: boolean;
+  onTextEdit?: (
+    field: "overline" | "message" | "buttonLabel",
+    value: string,
+  ) => void;
 }) {
   const d = normalizeDesign(design);
+  const inlineText = (field: "overline" | "message" | "buttonLabel") => ({
+    contentEditable: editable,
+    suppressContentEditableWarning: true,
+    "data-inline-edit": editable ? field : undefined,
+    onBlur: (event: FocusEvent<HTMLElement>) =>
+      onTextEdit?.(field, event.currentTarget.innerText),
+  });
   return (
     <section
       className={`wedding-cover texture-${d.texture} shape-${d.shape} font-${d.font} layout-${d.layout} spacing-${d.spacing} ${d.photoOpacity > 0 ? "has-photo" : ""}`}
@@ -104,7 +119,11 @@ export default function WeddingCover({
         </div>
       )}
       <div className="wedding-cover-content">
-        <p className="wedding-eyebrow" data-edit-item="opening">
+        <p
+          className="wedding-eyebrow"
+          data-edit-item="opening"
+          {...inlineText("overline")}
+        >
           {d.overline}
         </p>
         <h1 data-edit-item="names">
@@ -112,7 +131,11 @@ export default function WeddingCover({
           <em>&</em>
           <span>{second}</span>
         </h1>
-        <p className="wedding-cover-message" data-edit-item="message">
+        <p
+          className="wedding-cover-message"
+          data-edit-item="message"
+          {...inlineText("message")}
+        >
           {d.message}
         </p>
         <p className="wedding-eyebrow" data-edit-item="date">
@@ -124,7 +147,9 @@ export default function WeddingCover({
             data-edit-item="button"
             href={href}
           >
-            {d.buttonLabel || action}
+            <span {...inlineText("buttonLabel")}>
+              {d.buttonLabel || action}
+            </span>
             <ArrowUpRight size={16} />
           </a>
         )}
