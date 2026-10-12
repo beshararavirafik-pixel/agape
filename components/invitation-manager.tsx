@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Copy, Plus, Eye, Link2, Trash2 } from "lucide-react";
+import { Copy, Plus, Eye, Link2, Trash2, Mail, Share2 } from "lucide-react";
 import { State } from "@/lib/model";
 import { supabase } from "@/lib/supabase";
 import { basePath, sitePath } from "@/lib/site-path";
@@ -117,7 +117,7 @@ export default function InvitationManager({
         </div>
         <p className="muted">
           A private invitation for each guest or family. No account needed.
-          Share links directly while email setup is paused.
+          Share by text, WhatsApp, or your own email.
         </p>
         <form
           onSubmit={(e) => {
@@ -309,6 +309,36 @@ export default function InvitationManager({
             >
               <Eye size={18} />
             </a>
+            <a
+              href={`mailto:?subject=${encodeURIComponent("You're invited to our celebration")}&body=${encodeURIComponent(`We would love to celebrate with you! View your invitation and RSVP here:\n\n${url}`)}`}
+              aria-label="Share invitation by email"
+              title="Open email draft"
+            >
+              <Mail size={18} />
+            </a>
+            <button
+              aria-label="Share invitation"
+              title="Share invitation"
+              onClick={async () => {
+                try {
+                  if (navigator.share) {
+                    await navigator.share({
+                      title: "You're invited to our celebration",
+                      text: "View your invitation and RSVP.",
+                      url,
+                    });
+                  } else {
+                    await navigator.clipboard.writeText(url);
+                    setCopied(true);
+                  }
+                } catch (err) {
+                  if (!(err instanceof DOMException && err.name === "AbortError"))
+                    setError("Copy the link from the field to share it.");
+                }
+              }}
+            >
+              <Share2 size={18} />
+            </button>
             {copied && <small role="status">Copied</small>}
           </div>
         )}
