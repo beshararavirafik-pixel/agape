@@ -7,6 +7,8 @@ const groups = [
     "THE CELEBRATION",
     "Overview",
     "Guests & RSVPs",
+    "Wedding Website",
+    "Invitations",
     "Seating studio",
     "Church Ceremony",
   ],

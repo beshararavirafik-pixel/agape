@@ -109,12 +109,15 @@
   gap: 12px;
 }
 .builder-templates button {
+  display: block;
+  width: 100%;
   background: transparent;
   padding: 0;
   border: 0;
   text-align: left;
 }
 .template-swatch {
+  width: 100%;
   height: 93px;
   display: flex;
   align-items: center;
