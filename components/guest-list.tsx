@@ -49,7 +49,6 @@ export default function GuestList({
     [selected, setSelected] = useState<string[]>([]),
     [deleting, setDeleting] = useState<string[] | null>(null),
     [familyPrimary, setFamilyPrimary] = useState<string | null>(null),
-    [lastAction, setLastAction] = useState(""),
     [addingToFamily, setAddingToFamily] = useState<string | null>(null),
     [renamingFamily, setRenamingFamily] = useState<string | null>(null),
     [familyName, setFamilyName] = useState(""),
@@ -118,7 +117,6 @@ export default function GuestList({
     ]);
     setFuture([]);
     change(next);
-    setLastAction(label);
   }
   function undoChange() {
     const item = history.at(-1);
@@ -126,7 +124,6 @@ export default function GuestList({
     setHistory((items) => items.slice(0, -1));
     setFuture((items) => [...items, item]);
     change(item.before);
-    setLastAction(`Undid ${item.label}`);
   }
   function redoChange() {
     const item = future.at(-1);
@@ -134,7 +131,6 @@ export default function GuestList({
     setFuture((items) => items.slice(0, -1));
     setHistory((items) => [...items, item]);
     change(item.after);
-    setLastAction(`Redid ${item.label}`);
   }
   function toggleFamily(name: string) {
     if (openedFamily === name) {
@@ -593,11 +589,11 @@ export default function GuestList({
                 role="group"
                 aria-label="Undo and redo guest changes"
               >
-                <span role="status">{lastAction || "Guest changes"}</span>
                 <button
                   onClick={undoChange}
                   disabled={!history.length}
                   aria-label="Undo"
+                  title={`Undo ${history.at(-1)?.label || "last change"}`}
                 >
                   Undo
                 </button>
@@ -605,6 +601,7 @@ export default function GuestList({
                   onClick={redoChange}
                   disabled={!future.length}
                   aria-label="Redo"
+                  title={`Redo ${future.at(-1)?.label || "change"}`}
                 >
                   Redo
                 </button>

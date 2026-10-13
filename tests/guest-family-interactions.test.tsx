@@ -97,6 +97,9 @@ test("dragging moves one guest, preserves RSVP/seats, and supports the RSVP menu
     initial.guests.map((g) => g.rsvp),
   );
   assert.equal(destination.classList.contains("is-drop-target"), false);
+  assert.equal(screen.queryByText(/moved to/), null);
+  assert.ok(screen.getByRole("button", { name: "Undo" }));
+  assert.ok(screen.getByRole("button", { name: "Redo" }));
   fireEvent.click(screen.getByRole("button", { name: "Undo" }));
   assert.equal(
     invitationFamilies(current).find((f) => f.title === "Target family")!

@@ -2341,11 +2341,6 @@ td select {
   background: rgba(255, 255, 255, 0.72);
   box-shadow: 0 4px 16px rgba(35, 35, 27, 0.06);
 }
-.guest-history span {
-  flex: 0 1 auto;
-  padding-inline: 4px 10px;
-  color: #77756c;
-}
 .guest-history button {
   min-width: 66px;
   border: 1px solid #dedbd0;
