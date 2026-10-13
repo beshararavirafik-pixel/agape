@@ -18,6 +18,7 @@ import "@fontsource/lora/400-italic.css";
 import "./globals.css";
 import "./invitation.css";
 import "./wedding-builder.css";
+import DismissMenus from "@/components/dismiss-menus";
 export const metadata: Metadata = {
   title: "Agapē",
   description: "A thoughtful space for planning your wedding or engagement.",
@@ -39,6 +40,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         }
       >
         {children}
+        <DismissMenus />
       </body>
     </html>
   );

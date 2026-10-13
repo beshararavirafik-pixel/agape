@@ -5952,10 +5952,33 @@ button.add-circle:hover {
   font-size: 12px;
 }
 
-/* Family cards keep a shared row baseline when one is expanded. */
+/* Columns expand independently and rejoin shared closed-card baselines. */
 .household-list {
   grid-auto-rows: auto;
   align-items: start;
+}
+.family-column {
+  display: flex;
+  flex-direction: column;
+  gap: inherit;
+  min-width: 0;
+}
+.family-column > .household-card {
+  flex: 0 0 auto;
+  margin-bottom: 0;
+  transition: margin-bottom 360ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+.family-column > .household-card.is-expanded {
+  margin-bottom: var(--family-row-fill, 0px);
+}
+.family-column .family-card-header {
+  min-height: calc(var(--family-row-height, 2px) - 2px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .family-column > .household-card {
+    transition: none;
+  }
 }
 .household-card .family-card-header .household-heading {
   min-height: 80px;
@@ -6018,8 +6041,8 @@ button.add-circle:hover {
   grid-template-rows: 0fr;
   opacity: 0;
   visibility: hidden;
-  transition: grid-template-rows 320ms cubic-bezier(0.2, 0.65, 0.3, 1),
-    opacity 200ms ease, visibility 0s 320ms;
+  transition: grid-template-rows 360ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 200ms ease, visibility 0s 360ms;
 }
 .family-expansion[data-open="true"] {
   grid-template-rows: 1fr;

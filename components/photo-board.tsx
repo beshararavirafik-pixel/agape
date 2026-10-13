@@ -170,7 +170,7 @@ export default function PhotoBoard({
     <section className="photo-board">
       <div className="board-toolbar">
         <span>{items.length} ideas</span>
-        <details className="board-create-menu">
+        <details className="board-create-menu" data-dismiss-outside>
           <summary
             className="add-circle"
             aria-label="Add to inspiration"

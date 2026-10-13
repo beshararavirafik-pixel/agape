@@ -1,5 +1,5 @@
 "use client";
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Search, ChevronDown } from "lucide-react";
 type Person = { id: string; name: string; group?: string; detail?: string };
 export default function PersonPicker({
@@ -14,11 +14,27 @@ export default function PersonPicker({
   const [query, setQuery] = useState(""),
     [open, setOpen] = useState(false);
   const id = useId();
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const outside = (event: PointerEvent) => {
+      if (!root.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", outside);
+      document.removeEventListener("keydown", escape);
+    };
+  }, [open]);
   const filtered = people.filter((p) =>
     p.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
   );
   return (
-    <div className="person-picker">
+    <div className="person-picker" ref={root}>
       <label htmlFor={id}>{label}</label>
       <div className="person-picker-input">
         <Search size={16} />
