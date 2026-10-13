@@ -118,11 +118,10 @@ test("400 guests display without pagination, with alphabet navigation and local 
   assert.equal(screen.queryByRole("button", { name: "Create family" }), null);
   assert.equal(current.guests[0].family_name, "Mark Nosseir & family");
   assert.ok(screen.getByRole("button", { name: /Mark Nosseir & family/ }));
-  assert.ok(screen.getByText(/3 people total/));
+  assert.ok(screen.getByRole("dialog", { name: "Mark Nosseir & family" }));
+  assert.ok(screen.getByText("3 people · 0 accepted · 3 pending"));
   assert.equal(current.family_links?.length, 2);
-  fireEvent.click(screen.getByRole("button", { name: "Open Mark Nosseir" }));
-  assert.ok(screen.getByRole("button", { name: "Add relative" }));
-  fireEvent.click(screen.getByRole("button", { name: "Add relative" }));
+  fireEvent.click(screen.getByRole("button", { name: "Add to family" }));
   fireEvent.change(screen.getByLabelText("Family member name"), {
     target: { value: "Mina Nosseir" },
   });
@@ -131,8 +130,7 @@ test("400 guests display without pagination, with alphabet navigation and local 
   });
   fireEvent.click(screen.getByRole("button", { name: "Add member" }));
   assert.equal(current.guests.length, 4);
-  assert.ok(screen.getByText(/4 people total/));
-  fireEvent.click(screen.getByRole("button", { name: "Open Mark Nosseir" }));
+  assert.ok(screen.getByText("4 people · 0 accepted · 4 pending"));
   fireEvent.click(screen.getByRole("button", { name: "Rename family" }));
   fireEvent.change(screen.getByLabelText("Family name"), {
     target: { value: "The Nosseir Family" },

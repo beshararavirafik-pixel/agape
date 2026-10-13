@@ -6,7 +6,7 @@ import GuestList from "../components/guest-list";
 import { sample } from "../lib/model";
 import { invitationFamilies } from "../lib/families";
 
-test("dragging moves one guest, preserves RSVP/seats, and supports the RSVP menu and reversible family disclosure", async () => {
+test("dragging moves one guest, preserves RSVP/seats, and supports the RSVP menu and reversible family details", async () => {
   const dom = new JSDOM("<html><body></body></html>", {
     url: "http://localhost",
   });
@@ -67,11 +67,9 @@ test("dragging moves one guest, preserves RSVP/seats, and supports the RSVP menu
   assert.equal(source.getAttribute("aria-expanded"), "false");
   assert.equal(target.getAttribute("aria-expanded"), "true");
   assert.equal(
-    document
-      .getElementById(target.getAttribute("aria-controls")!)
-      ?.closest("article"),
-    destination,
-    "members expand inside their original family card",
+    screen.getByRole("dialog", { name: "Target family" }).id,
+    target.getAttribute("aria-controls"),
+    "family members open in a dedicated details window",
   );
   fireEvent.click(source);
   assert.equal(target.getAttribute("aria-expanded"), "false");
@@ -133,19 +131,17 @@ test("dragging moves one guest, preserves RSVP/seats, and supports the RSVP menu
   fireEvent.click(trigger);
   fireEvent.keyDown(document.activeElement!, { key: "Escape" });
   assert.equal(screen.queryByRole("listbox"), null);
-  fireEvent.click(target);
   assert.equal(target.getAttribute("aria-expanded"), "false");
-  assert.ok(
-    document
-      .getElementById(target.getAttribute("aria-controls")!)
-      ?.hasAttribute("inert"),
-  );
+  assert.equal(screen.queryByRole("dialog"), null);
   assert.equal(
     screen.queryByRole("button", { name: `Open ${moved.name}` }),
     null,
   );
   fireEvent.click(target);
+  assert.ok(screen.getByRole("dialog", { name: "Target family" }));
   assert.ok(screen.getByRole("button", { name: `Open ${moved.name}` }));
+  fireEvent.keyDown(document.activeElement!, { key: "Escape" });
+  assert.equal(screen.queryByRole("dialog"), null);
   cleanup();
   dom.window.close();
 });
