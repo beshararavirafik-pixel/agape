@@ -6780,3 +6780,290 @@ button.add-circle:hover {
     transition: none;
   }
 }
+
+/* The guest list keeps the history icons beside search at every breakpoint. */
+.directory-controls .guest-tools .guest-history {
+  display: flex;
+  width: auto;
+  height: 38px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 2px;
+  margin: 0;
+  padding: 2px;
+  border: 1px solid rgb(133 129 112 / 22%);
+  border-radius: 12px;
+  background: rgb(255 255 255 / 45%);
+  box-shadow: none;
+}
+.directory-controls .guest-tools .guest-history button {
+  display: grid;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  min-height: 32px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #57564d;
+  cursor: pointer;
+}
+.directory-controls .guest-tools .guest-history button:hover:not(:disabled) {
+  background: rgb(226 223 212 / 72%);
+}
+.directory-controls .guest-tools .guest-history button:focus-visible {
+  outline: 2px solid #8d8876;
+  outline-offset: 1px;
+}
+.directory-controls .guest-tools .guest-history button:disabled {
+  opacity: 0.36;
+  cursor: default;
+}
+.directory-controls > .guest-undo {
+  flex-basis: auto;
+}
+
+/* Keep the family roster focused on names, RSVP, and seating. */
+.family-detail-dialog {
+  width: min(620px, calc(100vw - 32px));
+  min-width: min(340px, calc(100vw - 24px));
+  max-width: 100%;
+  flex: 0 1 620px;
+}
+.family-detail-heading > div {
+  min-width: 0;
+}
+.family-detail-heading h2 {
+  overflow-wrap: anywhere;
+}
+.family-detail-heading p {
+  margin-top: 4px;
+  font-size: 12px;
+}
+.family-detail-body {
+  padding: 8px 22px 18px;
+}
+.family-detail-rows {
+  overflow-x: hidden;
+}
+.family-detail-dialog table.guest-rows {
+  table-layout: fixed;
+}
+.family-detail-dialog .guest-rows tr {
+  grid-template-columns: 18px minmax(0, 1fr) auto auto 26px;
+  gap: 8px;
+  min-height: 48px;
+  padding: 8px 0;
+}
+.family-detail-dialog .guest-rows td:first-child {
+  grid-column: 1;
+  grid-row: 1;
+}
+.family-detail-dialog .guest-rows td:nth-child(2) {
+  grid-column: 2;
+  grid-row: 1;
+}
+.family-detail-dialog .guest-rows td:nth-child(3) {
+  grid-column: 3;
+  grid-row: 1;
+}
+.family-detail-dialog .guest-rows td:nth-child(4) {
+  grid-column: 4;
+  grid-row: 1;
+  padding: 0 2px;
+  white-space: nowrap;
+}
+.family-detail-dialog .guest-rows td:nth-child(5) {
+  grid-column: 5;
+  grid-row: 1;
+}
+.family-detail-dialog .guest-identity {
+  display: block;
+  width: auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+  color: var(--ink);
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.family-detail-dialog .guest-identity > .avatar,
+.family-detail-dialog .guest-identity small {
+  display: none;
+}
+.family-detail-dialog .guest-identity strong {
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.family-detail-dialog .guest-rows .rsvp-select {
+  min-height: 28px;
+  padding: 4px 26px 4px 9px;
+  font-size: 11px;
+}
+.family-detail-dialog .guest-table-name {
+  font-size: 11px;
+}
+.family-detail-dialog .guest-rows .guest-delete {
+  display: grid;
+  width: 26px;
+  height: 28px;
+  place-items: center;
+  padding: 0;
+}
+.family-detail-dialog .family-local-actions {
+  gap: 8px;
+  padding-top: 12px;
+}
+.family-detail-dialog .family-local-actions .add-family-member {
+  min-height: 34px;
+}
+.family-detail-dialog
+  .family-local-actions
+  .add-family-member:not(.add-circle) {
+  min-height: 34px;
+  padding: 6px 11px;
+  font-size: 12px;
+}
+
+/* The guest-row disclosure shares its existing roster instead of repeating it. */
+.guest-inline-family > td {
+  width: 100%;
+}
+.guest-inline-family > td > div {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 3px;
+  padding: 9px 12px;
+}
+.guest-inline-family strong,
+.guest-inline-family span {
+  min-width: 0;
+  margin: 0;
+}
+.guest-inline-family strong {
+  font-size: 13px;
+  font-weight: 550;
+}
+.guest-inline-family span {
+  overflow-wrap: anywhere;
+  font-size: 11px;
+}
+.guest-inline-family .family-local-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 5px 0 0;
+  padding-top: 7px;
+}
+.guest-inline-family .family-local-actions .add-circle {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  min-height: 30px;
+  flex: 0 0 30px;
+}
+.guest-inline-family .family-local-actions button:not(.add-circle) {
+  min-height: 30px;
+  padding: 5px 9px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .directory-controls .guest-tools {
+    position: relative;
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    flex-wrap: nowrap;
+    gap: 7px;
+  }
+  .directory-controls .guest-tools::before {
+    display: none;
+    content: none;
+  }
+  .directory-controls .guest-tools .guest-history {
+    height: 36px;
+  }
+  .directory-controls .guest-tools .guest-history button {
+    width: 30px;
+    min-width: 30px;
+    height: 30px;
+    min-height: 30px;
+  }
+  .directory-controls .guest-tools .guest-search-compact,
+  .directory-controls .guest-tools .guest-search-compact.has-query {
+    position: relative;
+    inset: auto;
+    width: 32px;
+    min-width: 32px;
+    flex: 0 0 32px;
+  }
+  .directory-controls .guest-tools .guest-search-compact:focus-within {
+    position: absolute;
+    left: 43px;
+    top: 0;
+    width: calc(100% - 43px);
+    height: 36px;
+    padding: 0 10px;
+    z-index: 15;
+  }
+  .family-detail-backdrop {
+    align-items: flex-end;
+    padding: 10px;
+  }
+  .family-detail-dialog {
+    width: calc(100vw - 20px);
+    min-width: 0;
+    max-height: 90dvh;
+    flex: 0 1 auto;
+  }
+  .family-detail-heading {
+    grid-template-columns: 42px minmax(0, 1fr) 34px;
+    gap: 10px;
+    padding: 15px 16px 13px;
+  }
+  .family-detail-heading > .avatar {
+    width: 42px;
+    height: 42px;
+    font-size: 12px;
+  }
+  .family-detail-heading h2 {
+    font-size: 21px;
+  }
+  .family-detail-close {
+    width: 34px;
+    height: 34px;
+  }
+  .family-detail-body {
+    padding: 4px 16px 16px;
+  }
+  .family-detail-dialog .guest-rows tr {
+    grid-template-columns: 18px minmax(0, 1fr) 26px;
+    gap: 5px 8px;
+    padding: 8px 0;
+  }
+  .family-detail-dialog .guest-rows td:nth-child(3) {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .family-detail-dialog .guest-rows td:nth-child(4) {
+    grid-column: 2;
+    grid-row: 3;
+    justify-self: start;
+    padding: 0;
+  }
+  .family-detail-dialog .guest-rows td:nth-child(5) {
+    grid-column: 3;
+    grid-row: 1;
+  }
+}

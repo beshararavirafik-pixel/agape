@@ -56,6 +56,15 @@ test("400 guests display without pagination, with alphabet navigation and local 
     true,
     "redo is visible but unavailable until an action has been undone",
   );
+  assert.equal(screen.getByRole("button", { name: "Undo" }).textContent, "");
+  assert.equal(screen.getByRole("button", { name: "Redo" }).textContent, "");
+  assert.ok(
+    screen
+      .getByRole("button", { name: "Undo" })
+      .compareDocumentPosition(screen.getByLabelText("Search guests")) &
+      dom.window.Node.DOCUMENT_POSITION_FOLLOWING,
+    "undo and redo icons sit immediately before search",
+  );
   assert.ok(
     screen
       .getByRole("checkbox", { name: "Select all guests" })
@@ -129,7 +138,7 @@ test("400 guests display without pagination, with alphabet navigation and local 
   assert.equal(current.guests[0].family_name, "Mark Nosseir & family");
   assert.ok(screen.getByRole("button", { name: /Mark Nosseir & family/ }));
   assert.ok(screen.getByRole("dialog", { name: "Mark Nosseir & family" }));
-  assert.ok(screen.getByText("3 people · 0 accepted · 3 pending"));
+  assert.ok(screen.getByText("3 guests"));
   assert.equal(current.family_links?.length, 2);
   fireEvent.click(screen.getByRole("button", { name: "Add to family" }));
   fireEvent.change(screen.getByLabelText("Family member name"), {
@@ -140,7 +149,7 @@ test("400 guests display without pagination, with alphabet navigation and local 
   });
   fireEvent.click(screen.getByRole("button", { name: "Add member" }));
   assert.equal(current.guests.length, 4);
-  assert.ok(screen.getByText("4 people · 0 accepted · 4 pending"));
+  assert.ok(screen.getByText("4 guests"));
   fireEvent.click(screen.getByRole("button", { name: "Rename family" }));
   fireEvent.change(screen.getByLabelText("Family name"), {
     target: { value: "The Nosseir Family" },

@@ -18,6 +18,8 @@ import {
   X,
   SlidersHorizontal,
   Plus,
+  Undo2,
+  Redo2,
 } from "lucide-react";
 import {
   renameFamily,
@@ -469,6 +471,28 @@ export default function GuestList({
         <div className="card guest-ledger">
           <div className="directory-controls">
             <div className="guest-tools">
+              <div
+                className="guest-undo guest-history"
+                role="group"
+                aria-label="Undo and redo guest changes"
+              >
+                <button
+                  onClick={undoChange}
+                  disabled={!history.length}
+                  aria-label="Undo"
+                  title={`Undo ${history.at(-1)?.label || "last change"}`}
+                >
+                  <Undo2 size={17} aria-hidden="true" />
+                </button>
+                <button
+                  onClick={redoChange}
+                  disabled={!future.length}
+                  aria-label="Redo"
+                  title={`Redo ${future.at(-1)?.label || "change"}`}
+                >
+                  <Redo2 size={17} aria-hidden="true" />
+                </button>
+              </div>
               <label
                 className={`search guest-search-compact ${query ? "has-query" : ""}`}
               >
@@ -592,28 +616,6 @@ export default function GuestList({
                 title="Add guest"
               >
                 <Plus size={18} />
-              </button>
-            </div>
-            <div
-              className="guest-undo guest-history"
-              role="group"
-              aria-label="Undo and redo guest changes"
-            >
-              <button
-                onClick={undoChange}
-                disabled={!history.length}
-                aria-label="Undo"
-                title={`Undo ${history.at(-1)?.label || "last change"}`}
-              >
-                Undo
-              </button>
-              <button
-                onClick={redoChange}
-                disabled={!future.length}
-                aria-label="Redo"
-                title={`Redo ${future.at(-1)?.label || "change"}`}
-              >
-                Redo
               </button>
             </div>
             <div
@@ -801,25 +803,10 @@ export default function GuestList({
                           .join("")}
                       </span>
                       <div>
-                        <small>Family invitation</small>
                         <h2 id={`family-details-title-${expandedFamily.id}`}>
                           {expandedFamily.title}
                         </h2>
-                        <p>
-                          {expandedFamily.members.length} people ·{" "}
-                          {
-                            expandedFamily.members.filter(
-                              (guest) => guest.rsvp === "accepted",
-                            ).length
-                          }{" "}
-                          accepted ·{" "}
-                          {
-                            expandedFamily.members.filter(
-                              (guest) => guest.rsvp === "pending",
-                            ).length
-                          }{" "}
-                          pending
-                        </p>
+                        <p>{expandedFamily.members.length} guests</p>
                       </div>
                       <button
                         className="family-detail-close"
@@ -830,10 +817,6 @@ export default function GuestList({
                       </button>
                     </header>
                     <div className="family-detail-body">
-                      <div className="family-detail-members-heading">
-                        <h3>Guests</h3>
-                        <span>{expandedFamily.members.length}</span>
-                      </div>
                       <div className="family-detail-rows">
                         <table className="guest-rows">
                           <tbody>
