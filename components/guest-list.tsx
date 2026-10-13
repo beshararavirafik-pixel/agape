@@ -10,6 +10,7 @@ import {
 import type { DragEvent } from "react";
 import RsvpSelect from "@/components/rsvp-select";
 import { useDragAutoScroll } from "@/lib/use-drag-auto-scroll";
+import { familyGrid } from "@/lib/family-grid";
 import {
   Search,
   Trash2,
@@ -62,30 +63,41 @@ export default function GuestList({
     [existingMember, setExistingMember] = useState(""),
     [memberRole, setMemberRole] = useState("Relative"),
     [removed, setRemoved] = useState<RemovedGuests | null>(null),
-    [expanded, setExpanded] = useState<string[]>([]),
+    [openedFamily, setOpenedFamily] = useState<string | null>(null),
     [revealedFamilies, setRevealedFamilies] = useState<string[]>([]),
     [draggedGuest, setDraggedGuest] = useState<string | null>(null),
-    [dropFamily, setDropFamily] = useState<string | null>(null),
-    [familyColumns, setFamilyColumns] = useState(1);
+    [dropFamily, setDropFamily] = useState<string | null>(null);
   const dragGuestId = useRef<string | null>(null);
   useDragAutoScroll(Boolean(draggedGuest));
   const familyList = useRef<HTMLDivElement>(null);
+  const gridWidth = useRef<number | null>(null);
+  const gridAnimations = useRef<Map<HTMLElement, Animation>>(new Map());
+  useEffect(
+    () => () => {
+      gridAnimations.current.forEach((animation) => animation.cancel());
+      gridAnimations.current.clear();
+    },
+    [],
+  );
   useLayoutEffect(() => {
     const list = familyList.current;
     if (!list || typeof ResizeObserver === "undefined") return;
-    let measuredWidth = 0;
+    const animations = gridAnimations.current;
+    let measuredWidth = gridWidth.current || 0;
+    let initialized = gridWidth.current !== null;
     const measure = () => {
-      measuredWidth = list.clientWidth;
       const style = getComputedStyle(list);
       const columns = Math.max(
         1,
         style.gridTemplateColumns.split(/\s+/).length,
       );
-      setFamilyColumns((current) => (current === columns ? current : columns));
       const cards = Array.from(
         list.querySelectorAll<HTMLElement>(".household-card"),
       );
       if (!cards.length) return;
+      const previousRowHeight = list.style.getPropertyValue(
+        "--family-row-height",
+      );
       list.style.removeProperty("--family-row-height");
       const rowHeight = Math.ceil(
         Math.max(
@@ -96,24 +108,72 @@ export default function GuestList({
           ),
         ),
       );
+      if (previousRowHeight) list.style.setProperty("--family-row-height", previousRowHeight);
+      const gap = parseFloat(style.rowGap) || 12;
+      const openIndex = cards.findIndex((card) =>
+        card.classList.contains("is-expanded"),
+      );
+      const contentHeight =
+        openIndex < 0
+          ? 0
+          : cards[openIndex].querySelector<HTMLElement>(
+              ".family-expansion .table-scroll",
+            )?.offsetHeight || 0;
+      const openRows =
+        columns === 1
+          ? 1
+          : Math.ceil(
+              (rowHeight + contentHeight + gap - 0.5) / (rowHeight + gap),
+            );
+      const positions = familyGrid(cards.length, columns, openIndex, openRows);
+      const changed =
+        previousRowHeight !== `${rowHeight}px` ||
+        cards.some((card, index) => {
+          const position = positions[index];
+          return (
+            card.style.gridColumnStart !== String(position.column) ||
+            card.style.gridRowStart !== String(position.row) ||
+            card.style.gridRowEnd !== `span ${position.span}`
+          );
+        });
+      const motion =
+        initialized &&
+        measuredWidth === list.clientWidth &&
+        columns > 1 &&
+        !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const before = motion
+        ? cards.map((card) => card.getBoundingClientRect())
+        : [];
       list.style.setProperty("--family-row-height", `${rowHeight}px`);
-      const gap = parseFloat(style.columnGap) || 12;
-      const step = rowHeight + gap;
-      cards.forEach((card) => {
-        const content = card.querySelector<HTMLElement>(
-          ".family-expansion .table-scroll",
+      list.dataset.balanced = String(columns > 1);
+      measuredWidth = list.clientWidth;
+      gridWidth.current = measuredWidth;
+      initialized = true;
+      if (!changed) return;
+      animations.forEach((animation) => animation.cancel());
+      animations.clear();
+      cards.forEach((card, index) => {
+        const position = positions[index];
+        card.style.gridColumnStart = String(position.column);
+        card.style.gridRowStart = String(position.row);
+        card.style.gridRowEnd = `span ${position.span}`;
+      });
+      if (!motion) return;
+      cards.forEach((card, index) => {
+        const box = card.getBoundingClientRect();
+        const dx = before[index].left - box.left;
+        const dy = before[index].top - box.top;
+        if (!card.animate || (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5)) return;
+        animations.set(
+          card,
+          card.animate(
+            [
+              { transform: `translate(${dx}px, ${dy}px)` },
+              { transform: "translate(0, 0)" },
+            ],
+            { duration: 360, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+          ),
         );
-        const fullHeight = rowHeight + (content?.offsetHeight || 0);
-        const fill =
-          columns === 1
-            ? 0
-            : Math.max(
-                0,
-                Math.ceil((fullHeight + gap - 0.5) / step) * step -
-                  fullHeight -
-                  gap,
-              );
-        card.style.setProperty("--family-row-fill", `${fill}px`);
       });
     };
     measure();
@@ -129,7 +189,14 @@ export default function GuestList({
     list
       .querySelectorAll(".family-card-header, .family-expansion .table-scroll")
       .forEach((element) => observer.observe(element));
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (familyList.current !== list) {
+        animations.forEach((animation) => animation.cancel());
+        animations.clear();
+        gridWidth.current = null;
+      }
+    };
   }, [
     view,
     query,
@@ -137,19 +204,14 @@ export default function GuestList({
     rsvp,
     seating,
     state.guests,
-    expanded,
+    openedFamily,
     openedGuest,
-    familyColumns,
   ]);
   function toggleFamily(name: string) {
     setRevealedFamilies((items) =>
       items.includes(name) ? items : [...items, name],
     );
-    setExpanded((items) =>
-      items.includes(name)
-        ? items.filter((id) => id !== name)
-        : [...items, name],
-    );
+    setOpenedFamily((current) => (current === name ? null : name));
   }
   const deletePanel = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -322,9 +384,7 @@ export default function GuestList({
       setRevealedFamilies((items) =>
         items.includes(primaryId) ? items : [...items, primaryId],
       );
-      setExpanded((items) =>
-        items.includes(primaryId) ? items : [...items, primaryId],
-      );
+      setOpenedFamily(primaryId);
       setFamilyNotice(`${guest.name} moved to ${family.title}.`);
     }
     endGuestDrag();
@@ -709,159 +769,138 @@ export default function GuestList({
               ref={familyList}
               className="household-list guest-view-surface"
             >
-              {Array.from({ length: familyColumns }, (_, column) => (
-                <div className="family-column" key={column}>
-                  {shownFamilies
-                    .filter((_, index) => index % familyColumns === column)
-                    .map(
-                      ({ id: name, title, primary, members, relationship }) => (
-                        <article
-                          key={name}
-                          data-letter={firstLetter(title)}
-                          data-letters={Array.from(
-                            new Set([
-                              firstLetter(title),
-                              ...members.map((g) => firstLetter(g.name)),
-                            ]),
-                          ).join(" ")}
-                          className={`household-card alphabet-target ${expanded.includes(name) ? "is-expanded" : ""} ${members.some((g) => selected.includes(g.id)) ? "is-selected" : ""} ${dropFamily === name ? "is-drop-target" : ""}`}
-                          onDragOver={(event) => overFamily(event, name)}
-                          onDragLeave={(event) => leaveFamily(event, name)}
-                          onDrop={(event) => dropGuest(event, name)}
-                        >
-                          <div className="family-card-header">
-                            <input
-                              type="checkbox"
-                              aria-label={`Select invitation for ${primary.name}`}
-                              checked={members.every((g) =>
-                                selected.includes(g.id),
-                              )}
-                              ref={(el) => {
-                                if (el)
-                                  el.indeterminate =
-                                    members.some((g) =>
-                                      selected.includes(g.id),
-                                    ) &&
-                                    !members.every((g) =>
-                                      selected.includes(g.id),
-                                    );
-                              }}
-                              onChange={(e) =>
-                                setSelected(
-                                  e.target.checked
-                                    ? Array.from(
-                                        new Set([
-                                          ...selected,
-                                          ...members.map((g) => g.id),
-                                        ]),
-                                      )
-                                    : selected.filter(
-                                        (id) =>
-                                          !members.some((g) => g.id === id),
-                                      ),
+              {shownFamilies.map(
+                ({ id: name, title, primary, members, relationship }) => (
+                  <article
+                    key={name}
+                    data-letter={firstLetter(title)}
+                    data-letters={Array.from(
+                      new Set([
+                        firstLetter(title),
+                        ...members.map((g) => firstLetter(g.name)),
+                      ]),
+                    ).join(" ")}
+                    className={`household-card alphabet-target ${openedFamily === name ? "is-expanded" : ""} ${members.some((g) => selected.includes(g.id)) ? "is-selected" : ""} ${dropFamily === name ? "is-drop-target" : ""}`}
+                    onDragOver={(event) => overFamily(event, name)}
+                    onDragLeave={(event) => leaveFamily(event, name)}
+                    onDrop={(event) => dropGuest(event, name)}
+                  >
+                    <div className="family-card-header">
+                      <input
+                        type="checkbox"
+                        aria-label={`Select invitation for ${primary.name}`}
+                        checked={members.every((g) => selected.includes(g.id))}
+                        ref={(el) => {
+                          if (el)
+                            el.indeterminate =
+                              members.some((g) => selected.includes(g.id)) &&
+                              !members.every((g) => selected.includes(g.id));
+                        }}
+                        onChange={(e) =>
+                          setSelected(
+                            e.target.checked
+                              ? Array.from(
+                                  new Set([
+                                    ...selected,
+                                    ...members.map((g) => g.id),
+                                  ]),
                                 )
-                              }
-                            />
-                            <button
-                              className="household-heading"
-                              draggable
-                              title={`Drag ${primary.name} onto another family`}
-                              onDragStart={(event) =>
-                                startGuestDrag(event, primary)
-                              }
-                              onDragEnd={endGuestDrag}
-                              aria-expanded={expanded.includes(name)}
-                              onClick={() => toggleFamily(name)}
-                            >
-                              <span className="avatar">
-                                {primary.name
-                                  .split(/\s+/)
-                                  .map((n) => n[0])
-                                  .slice(0, 2)
-                                  .join("")}
-                              </span>
-                              <span>
-                                <strong>{title}</strong>
-                                {members.length > 1 && (
-                                  <small className="family-size">
-                                    {members.length} people total
-                                  </small>
-                                )}
-                                <small
-                                  className={`family-rsvp ${members.every((g) => g.rsvp === "accepted") ? "accepted" : members.every((g) => g.rsvp === "declined") ? "declined" : "pending"}`}
-                                >
-                                  {members.length === 1
-                                    ? primary.rsvp === "accepted"
-                                      ? "Accepted"
-                                      : primary.rsvp === "declined"
-                                        ? "Declined"
-                                        : "Awaiting reply"
-                                    : members.every(
-                                          (g) => g.rsvp === "accepted",
-                                        )
-                                      ? "Everyone accepted"
-                                      : members.every(
-                                            (g) => g.rsvp === "declined",
-                                          )
-                                        ? "Everyone declined"
-                                        : `${members.filter((g) => g.rsvp === "accepted").length} accepted · ${members.filter((g) => g.rsvp === "pending").length} pending`}
-                                </small>
-                              </span>
-                              <ChevronDown size={18} />
-                            </button>
-                          </div>
-                          <div
-                            className="family-expansion"
-                            data-open={expanded.includes(name)}
-                            aria-hidden={!expanded.includes(name)}
-                            inert={!expanded.includes(name)}
+                              : selected.filter(
+                                  (id) => !members.some((g) => g.id === id),
+                                ),
+                          )
+                        }
+                      />
+                      <button
+                        className="household-heading"
+                        draggable
+                        title={`Drag ${primary.name} onto another family`}
+                        onDragStart={(event) => startGuestDrag(event, primary)}
+                        onDragEnd={endGuestDrag}
+                        aria-expanded={openedFamily === name}
+                        onClick={() => toggleFamily(name)}
+                      >
+                        <span className="avatar">
+                          {primary.name
+                            .split(/\s+/)
+                            .map((n) => n[0])
+                            .slice(0, 2)
+                            .join("")}
+                        </span>
+                        <span>
+                          <strong>{title}</strong>
+                          {members.length > 1 && (
+                            <small className="family-size">
+                              {members.length} people total
+                            </small>
+                          )}
+                          <small
+                            className={`family-rsvp ${members.every((g) => g.rsvp === "accepted") ? "accepted" : members.every((g) => g.rsvp === "declined") ? "declined" : "pending"}`}
                           >
-                            <div className="family-expansion-inner">
-                              {(expanded.includes(name) ||
-                                revealedFamilies.includes(name)) && (
-                                <div className="table-scroll">
-                                  <table className="guest-rows">
-                                    <tbody>
-                                      {members.map((g) =>
-                                        row(g, relationship(g.id)),
-                                      )}
-                                    </tbody>
-                                  </table>
-                                  <div className="family-local-actions">
-                                    {" "}
-                                    <button
-                                      aria-label="Add to family"
-                                      title="Add to family"
-                                      className="add-family-member add-circle"
-                                      onClick={() => {
-                                        setAddingToFamily(primary.id);
-                                        setAddMode("new");
-                                        setMemberName("");
-                                        setExistingMember("");
-                                        setMemberRole("Relative");
-                                      }}
-                                    >
-                                      <Plus size={18} />
-                                    </button>
-                                    <button
-                                      className="add-family-member"
-                                      onClick={() => {
-                                        setRenamingFamily(primary.id);
-                                        setFamilyName(title);
-                                      }}
-                                    >
-                                      Rename family
-                                    </button>
-                                  </div>
-                                </div>
-                              )}
+                            {members.length === 1
+                              ? primary.rsvp === "accepted"
+                                ? "Accepted"
+                                : primary.rsvp === "declined"
+                                  ? "Declined"
+                                  : "Awaiting reply"
+                              : members.every((g) => g.rsvp === "accepted")
+                                ? "Everyone accepted"
+                                : members.every((g) => g.rsvp === "declined")
+                                  ? "Everyone declined"
+                                  : `${members.filter((g) => g.rsvp === "accepted").length} accepted · ${members.filter((g) => g.rsvp === "pending").length} pending`}
+                          </small>
+                        </span>
+                        <ChevronDown size={18} />
+                      </button>
+                    </div>
+                    <div
+                      className="family-expansion"
+                      data-open={openedFamily === name}
+                      aria-hidden={!(openedFamily === name)}
+                      inert={!(openedFamily === name)}
+                    >
+                      <div className="family-expansion-inner">
+                        {(openedFamily === name ||
+                          revealedFamilies.includes(name)) && (
+                          <div className="table-scroll">
+                            <table className="guest-rows">
+                              <tbody>
+                                {members.map((g) => row(g, relationship(g.id)))}
+                              </tbody>
+                            </table>
+                            <div className="family-local-actions">
+                              {" "}
+                              <button
+                                aria-label="Add to family"
+                                title="Add to family"
+                                className="add-family-member add-circle"
+                                onClick={() => {
+                                  setAddingToFamily(primary.id);
+                                  setAddMode("new");
+                                  setMemberName("");
+                                  setExistingMember("");
+                                  setMemberRole("Relative");
+                                }}
+                              >
+                                <Plus size={18} />
+                              </button>
+                              <button
+                                className="add-family-member"
+                                onClick={() => {
+                                  setRenamingFamily(primary.id);
+                                  setFamilyName(title);
+                                }}
+                              >
+                                Rename family
+                              </button>
                             </div>
                           </div>
-                        </article>
-                      ),
-                    )}
-                </div>
-              ))}
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                ),
+              )}
             </div>
           )}
           {!total && (
@@ -1145,9 +1184,7 @@ export default function GuestList({
                       ? renameFamily(grouped, familyPrimary, creationFamilyName)
                       : grouped,
                   );
-                  setExpanded((a) =>
-                    Array.from(new Set([...a, familyPrimary])),
-                  );
+                  setOpenedFamily(familyPrimary);
                   setFamilyNotice(
                     "Family created. Individual RSVPs and seats are preserved.",
                   );

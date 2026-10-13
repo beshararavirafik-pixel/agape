@@ -52,6 +52,12 @@ test("dragging moves one guest, preserves RSVP/seats, and supports the RSVP menu
   fireEvent.drop(destination);
   assert.equal(current, initial, "external drops are ignored");
   fireEvent.click(source);
+  fireEvent.click(target);
+  assert.equal(source.getAttribute("aria-expanded"), "false");
+  assert.equal(target.getAttribute("aria-expanded"), "true");
+  fireEvent.click(source);
+  assert.equal(target.getAttribute("aria-expanded"), "false");
+  assert.equal(source.getAttribute("aria-expanded"), "true");
   const moved = initial.guests[3];
   const transfer = { setData() {}, effectAllowed: "", dropEffect: "" };
   fireEvent.dragStart(
