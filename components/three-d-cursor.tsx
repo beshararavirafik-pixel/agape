@@ -16,6 +16,7 @@ const arrowPath =
 
 export default function ThreeDCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
+  const arrowRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const cursor = cursorRef.current;
@@ -23,6 +24,85 @@ export default function ThreeDCursor() {
 
     const root = document.documentElement;
     root.classList.add("agape-3d-cursor");
+
+    const arrow = arrowRef.current;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let motionFrame: number | null = null;
+    let previousPoint: { x: number; y: number; time: number } | null = null;
+    let lastFrameTime = 0;
+    let stretchX = 1;
+    let stretchY = 1;
+    let velocityX = 0;
+    let velocityY = 0;
+    let targetX = 1;
+    let targetY = 1;
+
+    const resetMotion = () => {
+      if (motionFrame !== null) window.cancelAnimationFrame(motionFrame);
+      motionFrame = null;
+      previousPoint = null;
+      stretchX = stretchY = targetX = targetY = 1;
+      velocityX = velocityY = 0;
+      if (arrow) arrow.style.transform = "scale(1, 1)";
+    };
+
+    const animateMotion = (now: number) => {
+      motionFrame = null;
+      if (!arrow || reducedMotion.matches) {
+        resetMotion();
+        return;
+      }
+      const dt = Math.min(Math.max((now - lastFrameTime) / 1000, 0.001), 0.032);
+      lastFrameTime = now;
+      if (!previousPoint || now - previousPoint.time > 60)
+        targetX = targetY = 1;
+      velocityX += ((targetX - stretchX) * 260 - velocityX * 20) * dt;
+      velocityY += ((targetY - stretchY) * 260 - velocityY * 20) * dt;
+      stretchX += velocityX * dt;
+      stretchY += velocityY * dt;
+      arrow.style.transform = `scale(${stretchX.toFixed(4)}, ${stretchY.toFixed(4)})`;
+      if (
+        targetX === 1 &&
+        targetY === 1 &&
+        Math.abs(stretchX - 1) + Math.abs(stretchY - 1) < 0.001 &&
+        Math.abs(velocityX) + Math.abs(velocityY) < 0.006
+      ) {
+        resetMotion();
+        return;
+      }
+      motionFrame = window.requestAnimationFrame(animateMotion);
+    };
+
+    const moveBubble = (x: number, y: number) => {
+      if (!arrow || reducedMotion.matches || !Number.isFinite(x + y)) return;
+      const now = performance.now();
+      if (previousPoint) {
+        const dx = x - previousPoint.x;
+        const dy = y - previousPoint.y;
+        const distance = Math.hypot(dx, dy);
+        if (distance > 0) {
+          const strength = Math.min(
+            distance / Math.max(now - previousPoint.time, 8) / 2.4,
+            1,
+          );
+          targetX =
+            1 +
+            strength *
+              ((Math.abs(dx) / distance) * 0.12 -
+                (Math.abs(dy) / distance) * 0.04);
+          targetY =
+            1 +
+            strength *
+              ((Math.abs(dy) / distance) * 0.12 -
+                (Math.abs(dx) / distance) * 0.04);
+          if (motionFrame === null) {
+            lastFrameTime = now;
+            motionFrame = window.requestAnimationFrame(animateMotion);
+          }
+        }
+      }
+      previousPoint = { x, y, time: now };
+    };
 
     const position = (x: number, y: number) => {
       cursor.style.left = `${x}px`;
@@ -77,10 +157,14 @@ export default function ThreeDCursor() {
       const interactive = !isTextEntry
         ? target?.closest(interactiveTargets)
         : null;
-      if (interactive) migrateInto(interactive, event.clientX, event.clientY);
-      else {
+      if (interactive) {
+        resetMotion();
+        migrateInto(interactive, event.clientX, event.clientY);
+      } else {
         cursor.dataset.interactive = "false";
         position(event.clientX, event.clientY);
+        if (isTextEntry) resetMotion();
+        else moveBubble(event.clientX, event.clientY);
       }
     };
 
@@ -92,6 +176,7 @@ export default function ThreeDCursor() {
     };
     const leave = () => {
       cursor.dataset.hidden = "true";
+      resetMotion();
     };
 
     window.addEventListener("pointermove", update, { passive: true });
@@ -99,14 +184,17 @@ export default function ThreeDCursor() {
     window.addEventListener("pointerup", release, { passive: true });
     window.addEventListener("pointercancel", release, { passive: true });
     document.documentElement.addEventListener("pointerleave", leave);
+    window.addEventListener("blur", leave);
 
     return () => {
+      resetMotion();
       root.classList.remove("agape-3d-cursor");
       window.removeEventListener("pointermove", update);
       window.removeEventListener("pointerdown", press);
       window.removeEventListener("pointerup", release);
       window.removeEventListener("pointercancel", release);
       document.documentElement.removeEventListener("pointerleave", leave);
+      window.removeEventListener("blur", leave);
     };
   }, []);
 
@@ -120,41 +208,43 @@ export default function ThreeDCursor() {
       data-pressed="false"
       aria-hidden="true"
     >
-      <span className="three-d-cursor-glass" />
       <span className="three-d-cursor-surface" />
-      <svg viewBox="0 0 20 28" preserveAspectRatio="none" focusable="false">
-        <defs>
-          <clipPath id="cursor-glass-clip" clipPathUnits="objectBoundingBox">
-            <path d={arrowPath} transform="scale(.05 .0357142857)" />
-          </clipPath>
-          <linearGradient id="cursor-edge" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#fff" stopOpacity="0.94" />
-            <stop offset="0.5" stopColor="#e1e6e9" stopOpacity="0.52" />
-            <stop offset="1" stopColor="#fff" stopOpacity="0.86" />
-          </linearGradient>
-          <linearGradient id="cursor-sheen" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#fff" stopOpacity="0.24" />
-            <stop offset="0.55" stopColor="#fff" stopOpacity="0.03" />
-            <stop offset="1" stopColor="#fff" stopOpacity="0.12" />
-          </linearGradient>
-        </defs>
-        <path
-          d={arrowPath}
-          fill="none"
-          stroke="#20272c"
-          strokeOpacity=".34"
-          strokeWidth="1.8"
-          strokeLinejoin="round"
-        />
-        <path
-          d={arrowPath}
-          fill="url(#cursor-sheen)"
-          stroke="url(#cursor-edge)"
-          strokeWidth=".9"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
-      </svg>
+      <div ref={arrowRef} className="three-d-cursor-arrow">
+        <span className="three-d-cursor-glass" />
+        <svg viewBox="0 0 20 28" preserveAspectRatio="none" focusable="false">
+          <defs>
+            <clipPath id="cursor-glass-clip" clipPathUnits="objectBoundingBox">
+              <path d={arrowPath} transform="scale(.05 .0357142857)" />
+            </clipPath>
+            <linearGradient id="cursor-edge" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="#fff" stopOpacity="0.94" />
+              <stop offset="0.5" stopColor="#e1e6e9" stopOpacity="0.52" />
+              <stop offset="1" stopColor="#fff" stopOpacity="0.86" />
+            </linearGradient>
+            <linearGradient id="cursor-sheen" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="#fff" stopOpacity="0.24" />
+              <stop offset="0.55" stopColor="#fff" stopOpacity="0.03" />
+              <stop offset="1" stopColor="#fff" stopOpacity="0.12" />
+            </linearGradient>
+          </defs>
+          <path
+            d={arrowPath}
+            fill="none"
+            stroke="#20272c"
+            strokeOpacity=".34"
+            strokeWidth="1.8"
+            strokeLinejoin="round"
+          />
+          <path
+            d={arrowPath}
+            fill="url(#cursor-sheen)"
+            stroke="url(#cursor-edge)"
+            strokeWidth=".9"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
     </div>
   );
 }

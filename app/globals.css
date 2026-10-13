@@ -2596,6 +2596,16 @@ html.agape-3d-cursor
   transition: opacity 100ms ease;
   will-change: left, top, width, height, border-radius;
 }
+.three-d-cursor-arrow {
+  position: absolute;
+  inset: 0;
+  transform-origin: 2px 2px;
+  will-change: transform;
+  transition: scale 280ms cubic-bezier(0.22, 1.18, 0.36, 1);
+}
+.three-d-cursor[data-pressed="true"] .three-d-cursor-arrow {
+  scale: 0.92;
+}
 .three-d-cursor-glass {
   position: absolute;
   inset: 0;
@@ -2634,9 +2644,9 @@ html.agape-3d-cursor
   transition:
     left 240ms cubic-bezier(0.22, 0.78, 0.22, 1),
     top 240ms cubic-bezier(0.22, 0.78, 0.22, 1),
-    width 240ms cubic-bezier(0.22, 0.78, 0.22, 1),
-    height 240ms cubic-bezier(0.22, 0.78, 0.22, 1),
-    border-radius 240ms cubic-bezier(0.22, 0.78, 0.22, 1),
+    width 300ms cubic-bezier(0.22, 1.18, 0.36, 1),
+    height 300ms cubic-bezier(0.22, 1.18, 0.36, 1),
+    border-radius 300ms cubic-bezier(0.22, 1.18, 0.36, 1),
     opacity 100ms ease,
     background-color 180ms ease,
     box-shadow 180ms ease;
@@ -2663,7 +2673,7 @@ html.agape-3d-cursor
   transform: scale(1.035);
   transition:
     opacity 180ms ease,
-    transform 240ms cubic-bezier(0.22, 0.78, 0.22, 1);
+    transform 300ms cubic-bezier(0.22, 1.18, 0.36, 1);
 }
 .three-d-cursor[data-interactive="true"] .three-d-cursor-glass,
 .three-d-cursor[data-interactive="true"] svg {
@@ -2686,6 +2696,7 @@ html.agape-3d-cursor
 }
 @media (pointer: coarse), (prefers-reduced-motion: reduce) {
   .three-d-cursor,
+  .three-d-cursor-arrow,
   .three-d-cursor svg,
   .three-d-cursor-glass,
   .three-d-cursor-surface {
