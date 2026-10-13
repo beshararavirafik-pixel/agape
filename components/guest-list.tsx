@@ -10,6 +10,7 @@ import {
 import type { DragEvent } from "react";
 import RsvpSelect from "@/components/rsvp-select";
 import { useDragAutoScroll } from "@/lib/use-drag-auto-scroll";
+import { useDisclosureAnchor } from "@/lib/use-disclosure-anchor";
 
 import {
   Search,
@@ -71,22 +72,50 @@ export default function GuestList({
   const dragGuestId = useRef<string | null>(null);
   useDragAutoScroll(Boolean(draggedGuest));
   const familyList = useRef<HTMLDivElement>(null);
+  const anchorDisclosure = useDisclosureAnchor(openedFamily);
   useLayoutEffect(() => {
     const list = familyList.current;
     if (!list || typeof ResizeObserver === "undefined") return;
+    let width = -1;
     const measure = () => {
+      width = list.clientWidth;
       const columns = Math.max(
         1,
         window.getComputedStyle(list).gridTemplateColumns.split(/\s+/).length,
       );
       setFamilyColumns((current) => (current === columns ? current : columns));
+      list.style.removeProperty("--family-header-height");
+      const headers = Array.from(
+        list.querySelectorAll<HTMLElement>(".family-card-header"),
+      );
+      const height = Math.max(
+        0,
+        ...headers.map((header) =>
+          Math.ceil(header.getBoundingClientRect().height),
+        ),
+      );
+      list.style.setProperty("--family-header-height", `${height}px`);
     };
     measure();
-    const observer = new ResizeObserver(measure);
+    const observer = new ResizeObserver((entries) => {
+      if (
+        width === list.clientWidth &&
+        entries.every((entry) => entry.target === list)
+      )
+        return;
+      measure();
+    });
     observer.observe(list);
+    list
+      .querySelectorAll(".family-card-header")
+      .forEach((header) => observer.observe(header));
     return () => observer.disconnect();
-  }, [view]);
+  }, [view, familyColumns, state.guests, query, group, rsvp, seating]);
   function toggleFamily(name: string) {
+    if (openedFamily && openedFamily !== name) {
+      const header = document.getElementById(`family-heading-${name}`);
+      if (header) anchorDisclosure(name, header);
+    }
     setRevealedFamilies((items) => [
       ...items.filter((id) => id !== name),
       name,
