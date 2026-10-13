@@ -6,13 +6,15 @@ const textTargets =
   'input:not([type]), input[type="text"], input[type="search"], input[type="email"], input[type="password"], input[type="tel"], input[type="url"], input[type="number"], textarea, [contenteditable="true"], [role="textbox"]';
 const interactiveTargets =
   'a, button, [role="button"], [role="option"], [role="menuitem"], [role="tab"], select, summary, label, input[type="checkbox"], input[type="radio"]';
-const cursorWidth = 18;
-const cursorHeight = 24;
+const cursorWidth = 20;
+const cursorHeight = 20;
 const hoverPadding = 4;
 const maxMorphWidth = 320;
 const maxMorphHeight = 96;
 const arrowPath =
-  "M1.15 4.55C.85 1.45 2.6 .7 5.15 2.7L17.1 11.1C20 13.2 20 15.7 16.6 16.6L13.05 17.45C11.6 17.8 11.3 18.5 12 19.8L14.65 23.8C15.7 25.7 14.55 26.75 12.8 27.15C10.8 27.75 9.4 27.2 8.55 25.55L6.3 21.15C5.6 19.9 4.85 19.8 3.9 21L3.2 21.95C1.3 24.1 .35 22.85 .6 20.4C1.25 14.2 1.55 10.45 1.15 4.55Z";
+  "M10 3Q12 .3 14 3L21 13C22.9 15.7 21.8 17.2 19.3 16.65L16.1 15.95Q15 15.7 15 16.9L15 22Q15 24 13 24L11 24Q9 24 9 22L9 16.9Q9 15.7 7.9 15.95L4.7 16.65C2.2 17.2 1.1 15.7 3 13L10 3Z";
+// Mirror the shoulders and tail around x=12, then point the arrow northwest.
+const arrowTransform = "translate(2 2) rotate(-45) translate(-12 -1.65)";
 
 export default function ThreeDCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
@@ -211,10 +213,13 @@ export default function ThreeDCursor() {
       <span className="three-d-cursor-surface" />
       <div ref={arrowRef} className="three-d-cursor-arrow">
         <span className="three-d-cursor-glass" />
-        <svg viewBox="0 0 20 28" preserveAspectRatio="none" focusable="false">
+        <svg viewBox="0 0 22 22" preserveAspectRatio="none" focusable="false">
           <defs>
             <clipPath id="cursor-glass-clip" clipPathUnits="objectBoundingBox">
-              <path d={arrowPath} transform="scale(.05 .0357142857)" />
+              <path
+                d={arrowPath}
+                transform={`scale(.0454545455) ${arrowTransform}`}
+              />
             </clipPath>
             <linearGradient id="cursor-edge" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0" stopColor="#fff" stopOpacity="0.94" />
@@ -227,22 +232,24 @@ export default function ThreeDCursor() {
               <stop offset="1" stopColor="#fff" stopOpacity="0.12" />
             </linearGradient>
           </defs>
-          <path
-            d={arrowPath}
-            fill="none"
-            stroke="#20272c"
-            strokeOpacity=".34"
-            strokeWidth="1.8"
-            strokeLinejoin="round"
-          />
-          <path
-            d={arrowPath}
-            fill="url(#cursor-sheen)"
-            stroke="url(#cursor-edge)"
-            strokeWidth=".9"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
+          <g transform={arrowTransform}>
+            <path
+              d={arrowPath}
+              fill="none"
+              stroke="#20272c"
+              strokeOpacity=".34"
+              strokeWidth="1.8"
+              strokeLinejoin="round"
+            />
+            <path
+              d={arrowPath}
+              fill="url(#cursor-sheen)"
+              stroke="url(#cursor-edge)"
+              strokeWidth=".9"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+          </g>
         </svg>
       </div>
     </div>
