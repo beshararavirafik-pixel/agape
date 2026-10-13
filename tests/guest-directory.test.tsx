@@ -46,6 +46,16 @@ test("400 guests display without pagination, with alphabet navigation and local 
     return <GuestList state={s} change={set} edit={() => {}} />;
   }
   render(<Harness />);
+  assert.equal(
+    screen.getByRole("button", { name: "Undo" }).hasAttribute("disabled"),
+    true,
+    "undo is visible but unavailable until a change can be reversed",
+  );
+  assert.equal(
+    screen.getByRole("button", { name: "Redo" }).hasAttribute("disabled"),
+    true,
+    "redo is visible but unavailable until an action has been undone",
+  );
   assert.ok(
     screen
       .getByRole("checkbox", { name: "Select all guests" })

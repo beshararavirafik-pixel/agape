@@ -594,30 +594,28 @@ export default function GuestList({
                 <Plus size={18} />
               </button>
             </div>
-            {(history.length > 0 || future.length > 0) && (
-              <div
-                className="guest-undo guest-history"
-                role="group"
-                aria-label="Undo and redo guest changes"
+            <div
+              className="guest-undo guest-history"
+              role="group"
+              aria-label="Undo and redo guest changes"
+            >
+              <button
+                onClick={undoChange}
+                disabled={!history.length}
+                aria-label="Undo"
+                title={`Undo ${history.at(-1)?.label || "last change"}`}
               >
-                <button
-                  onClick={undoChange}
-                  disabled={!history.length}
-                  aria-label="Undo"
-                  title={`Undo ${history.at(-1)?.label || "last change"}`}
-                >
-                  Undo
-                </button>
-                <button
-                  onClick={redoChange}
-                  disabled={!future.length}
-                  aria-label="Redo"
-                  title={`Redo ${future.at(-1)?.label || "change"}`}
-                >
-                  Redo
-                </button>
-              </div>
-            )}
+                Undo
+              </button>
+              <button
+                onClick={redoChange}
+                disabled={!future.length}
+                aria-label="Redo"
+                title={`Redo ${future.at(-1)?.label || "change"}`}
+              >
+                Redo
+              </button>
+            </div>
             <div
               className={`guest-bulk-reveal ${selected.length ? "is-open" : ""}`}
               aria-hidden={!selected.length}
