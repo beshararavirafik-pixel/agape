@@ -96,7 +96,9 @@ test("dragging moves one guest, preserves RSVP/seats, and supports the RSVP menu
   fireEvent.click(target);
   assert.equal(target.getAttribute("aria-expanded"), "false");
   assert.ok(
-    destination.querySelector(".family-expansion")?.hasAttribute("inert"),
+    document
+      .getElementById(target.getAttribute("aria-controls")!)
+      ?.hasAttribute("inert"),
   );
   assert.equal(
     screen.queryByRole("button", { name: `Open ${moved.name}` }),
