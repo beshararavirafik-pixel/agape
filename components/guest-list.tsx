@@ -398,7 +398,10 @@ export default function GuestList({
               }
             />
           </td>
-          <td className="guest-table-name">
+          <td
+            className="guest-table-name"
+            title={seatMap.get(g.id) || "Unseated"}
+          >
             {seatMap.get(g.id) || "Unseated"}
           </td>
           <td>
