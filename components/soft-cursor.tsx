@@ -7,6 +7,9 @@ export default function SoftCursor() {
     const node = pointer.current;
     if (!node) return;
     const media = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const shape = node.querySelector<HTMLElement>(".soft-pointer-shape")!;
+    let migration: Animation | undefined;
     let frame = 0;
     let x = 0;
     let y = 0;
@@ -16,6 +19,7 @@ export default function SoftCursor() {
       visible = false;
       activeControl?.removeAttribute("data-pointer-active");
       activeControl = null;
+      migration?.cancel();
       cancelAnimationFrame(frame);
       frame = 0;
       node.style.opacity = "0";
@@ -35,17 +39,35 @@ export default function SoftCursor() {
       if (nextControl !== activeControl) {
         activeControl?.removeAttribute("data-pointer-active");
         activeControl = nextControl;
-        activeControl?.setAttribute("data-pointer-active", "true");
+        migration?.cancel();
+        if (activeControl) {
+          const box = activeControl.getBoundingClientRect();
+          activeControl.style.setProperty("--pointer-entry-x", `${x - box.left}px`);
+          activeControl.style.setProperty("--pointer-entry-y", `${y - box.top}px`);
+          activeControl.setAttribute("data-pointer-active", "true");
+          const dx = box.left + box.width / 2 - x;
+          const dy = box.top + box.height / 2 - y;
+          const distance = Math.hypot(dx, dy) || 1;
+          const travel = Math.min(distance, 18);
+          if (!reducedMotion.matches) {
+            migration = shape.animate(
+              [
+                { transform: "translate(0, 0) scale(1)", opacity: 1 },
+                { transform: `translate(${dx / distance * travel}px, ${dy / distance * travel}px) scale(0.25)`, opacity: 0 },
+              ],
+              { duration: 260, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)", fill: "forwards" },
+            );
+          }
+        }
       }
-      // The control owns its highlight. Fade the pointer at its real location
-      // instead of stretching a moving overlay across the page.
+      // A short inward motion hands the pointer off to a local glass ripple.
       node.dataset.integrated = String(Boolean(integrated));
       node.dataset.text = String(Boolean(editing));
       node.style.width = editing ? "2px" : "16px";
       node.style.height = editing ? "20px" : "21px";
       node.style.borderRadius = editing ? "1px" : "4px";
       node.style.transform = `translate3d(${editing ? x - 1 : x - 2}px, ${editing ? y - 10 : y - 2}px, 0)`;
-      node.style.opacity = integrated ? "0" : "1";
+      node.style.opacity = integrated && reducedMotion.matches ? "0" : "1";
     };
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(draw);
@@ -90,6 +112,7 @@ export default function SoftCursor() {
   }, []);
   return (
     <div className="soft-pointer" ref={pointer} aria-hidden="true">
+      <span className="soft-pointer-shape">
       <span className="soft-pointer-glass" />
       <svg
         className="soft-pointer-arrow"
@@ -107,6 +130,7 @@ export default function SoftCursor() {
           strokeLinecap="round"
         />
       </svg>
+      </span>
     </div>
   );
 }

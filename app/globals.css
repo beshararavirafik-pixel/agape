@@ -5876,14 +5876,47 @@ button.add-circle:hover {
 .soft-pointer[data-text="true"] .soft-pointer-glass {
   opacity: 0;
 }
-.soft-pointer[data-integrated="true"] {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7),
-    0 3px 14px rgba(66, 58, 42, 0.06);
+.soft-pointer-shape {
+  position: absolute;
+  inset: 0;
+  transform-origin: 4px 6px;
+}
+[data-cursor="integrate"] {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+[data-cursor="integrate"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--pointer-entry-x, 50%) var(--pointer-entry-y, 50%),
+    rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.12) 70%);
+  opacity: 0;
+}
+[data-cursor="integrate"][data-pointer-active="true"]::after {
+  animation: pointer-glass-merge 360ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes pointer-glass-merge {
+  0% {
+    clip-path: circle(5px at var(--pointer-entry-x, 50%) var(--pointer-entry-y, 50%));
+    opacity: 0.75;
+  }
+  55% {
+    opacity: 0.5;
+  }
+  100% {
+    clip-path: circle(120% at var(--pointer-entry-x, 50%) var(--pointer-entry-y, 50%));
+    opacity: 0;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
+  [data-cursor="integrate"][data-pointer-active="true"]::after {
+    animation: none;
+  }
   .soft-pointer-glass {
     transition: none !important;
   }
