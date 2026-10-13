@@ -27,6 +27,20 @@ test("the rounded frosted pointer migrates into options and yields to the text c
   const view = render(
     <>
       <button type="button">Add guest</button>
+      <a className="brand" href="/">
+        Agapē<span data-testid="brand-dot">.</span>
+      </a>
+      <button className="mobile-menu" aria-label="Toggle menu">
+        <span data-testid="menu-icon">☰</span>
+      </button>
+      <aside className="workspace-menu">
+        <button aria-label="Close planning menu">
+          <span data-testid="menu-close-icon">×</span>
+        </button>
+        <button aria-label="Guests and RSVPs">
+          <span data-testid="planning-menu-item">Guests & RSVPs</span>
+        </button>
+      </aside>
       <input aria-label="Guest name" />
       <label className="search" data-testid="search-container">
         <span data-testid="search-icon">⌕</span>
@@ -35,7 +49,7 @@ test("the rounded frosted pointer migrates into options and yields to the text c
       <ThreeDCursor />
     </>,
   );
-  const button = view.getByRole("button");
+  const button = view.getByRole("button", { name: "Add guest" });
   Object.defineProperty(button, "getBoundingClientRect", {
     configurable: true,
     value: () => ({
@@ -93,6 +107,35 @@ test("the rounded frosted pointer migrates into options and yields to the text c
   assert.equal(cursor.dataset.hidden, "true");
   fireEvent.pointerMove(view.getByRole("searchbox"));
   assert.equal(cursor.dataset.hidden, "false");
+
+  const logo = view.getByRole("link", { name: "Agapē." });
+  const toggleMenu = view.getByRole("button", { name: "Toggle menu" });
+  const menuItem = view.getByRole("button", { name: "Guests and RSVPs" });
+  const closeMenu = view.getByRole("button", { name: "Close planning menu" });
+  for (const target of [logo, toggleMenu, menuItem, closeMenu]) {
+    Object.defineProperty(target, "getBoundingClientRect", {
+      value: () => ({ left: 20, top: 30, width: 100, height: 32 }),
+    });
+  }
+  for (const area of [
+    logo,
+    view.getByTestId("brand-dot"),
+    toggleMenu,
+    view.getByTestId("menu-icon"),
+    menuItem,
+    view.getByTestId("planning-menu-item"),
+    closeMenu,
+    view.getByTestId("menu-close-icon"),
+  ]) {
+    fireEvent.pointerMove(button);
+    assert.equal(cursor.dataset.interactive, "true");
+    assert.equal(cursor.dataset.arrowOnly, "false");
+    fireEvent.pointerMove(area);
+    assert.equal(cursor.dataset.hidden, "false");
+    assert.equal(cursor.dataset.interactive, "false");
+    assert.equal(cursor.dataset.morph, "arrow");
+    assert.equal(cursor.dataset.arrowOnly, "true");
+  }
 
   Object.defineProperty(button, "getBoundingClientRect", {
     configurable: true,

@@ -2745,6 +2745,10 @@ html.agape-3d-cursor
   opacity: 1;
   transform: scale(1);
 }
+.three-d-cursor[data-arrow-only="true"] .three-d-cursor-surface,
+.three-d-cursor[data-morph="text"] .three-d-cursor-surface {
+  visibility: hidden;
+}
 .three-d-cursor[data-pressed="true"] {
   transform: scale(0.985);
 }

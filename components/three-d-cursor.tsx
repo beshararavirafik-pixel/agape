@@ -8,6 +8,7 @@ const searchTargets =
   '.search:has(input:not(:disabled):not([readonly])), input[type="search"]:not(:disabled):not([readonly]), input[aria-label^="Search"]:not(:disabled):not([readonly]), input[placeholder^="Search"]:not(:disabled):not([readonly])';
 const interactiveTargets =
   'a, button, [role="button"], [role="option"], [role="menuitem"], [role="tab"], select, summary, label, input[type="checkbox"], input[type="radio"]';
+const arrowOnlyTargets = ".brand, .mobile-menu, .workspace-menu";
 const cursorWidth = 20;
 const cursorHeight = 20;
 const hoverPadding = 4;
@@ -153,6 +154,8 @@ export default function ThreeDCursor() {
       if (event.pointerType === "touch") return;
 
       const target = event.target instanceof Element ? event.target : null;
+      const arrowOnly = Boolean(target?.closest(arrowOnlyTargets));
+      cursor.dataset.arrowOnly = String(arrowOnly);
       if (target?.closest(searchTargets)) {
         resetMotion();
         cursor.dataset.hidden = "false";
@@ -170,9 +173,8 @@ export default function ThreeDCursor() {
         target?.closest(".search")?.querySelector(textTargets),
       );
       cursor.dataset.hidden = String(isTextEntry || !target);
-      const interactive = !isTextEntry
-        ? target?.closest(interactiveTargets)
-        : null;
+      const interactive =
+        !isTextEntry && !arrowOnly ? target?.closest(interactiveTargets) : null;
       if (interactive) {
         resetMotion();
         migrateInto(interactive, event.clientX, event.clientY);
@@ -244,6 +246,7 @@ export default function ThreeDCursor() {
       data-interactive="false"
       data-morph="arrow"
       data-pressed="false"
+      data-arrow-only="false"
       aria-hidden="true"
     >
       <span className="three-d-cursor-surface" />

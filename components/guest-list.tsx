@@ -380,9 +380,11 @@ export default function GuestList({
               </span>
               <span>
                 <strong>{g.name}</strong>
-                <small>
-                  {relation || g.household || "Individual invitation"}
-                </small>
+                {view !== "guests" && (
+                  <small>
+                    {relation || g.household || "Individual invitation"}
+                  </small>
+                )}
               </span>
             </button>
           </td>
@@ -686,7 +688,7 @@ export default function GuestList({
                     <th>
                       <span className="sr-only">Select guest</span>
                     </th>
-                    <th>Guest / household</th>
+                    <th>Guest</th>
                     <th>RSVP</th>
                     <th>Table</th>
                     <th>
