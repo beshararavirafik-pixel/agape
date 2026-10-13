@@ -5744,20 +5744,11 @@ button.add-circle:hover {
   transition: opacity 240ms ease, transform 550ms cubic-bezier(0.34, 1.56, 0.64, 1);
   pointer-events: none;
 }
-.google-login-signup {
-  border-color: rgba(220, 205, 175, 0.7);
-  background: linear-gradient(135deg, rgba(248, 241, 226, 0.88), rgba(235, 224, 201, 0.5));
-  box-shadow: 0 4px 18px rgba(104, 84, 46, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.95);
-}
 .google-login:is(:hover, :focus-visible):not(:disabled) {
   border-color: rgba(255, 255, 255, 0.95);
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.6));
   box-shadow: 0 6px 22px rgba(66, 58, 42, 0.09), inset 0 1px 0 #fff;
   transform: translateY(-2px) scale(1.018);
-}
-.google-login-signup:is(:hover, :focus-visible):not(:disabled) {
-  border-color: rgba(204, 185, 149, 0.8);
-  background: linear-gradient(135deg, rgba(255, 248, 232, 0.96), rgba(239, 227, 201, 0.7));
 }
 .google-login:is(:hover, :focus-visible):not(:disabled)::before {
   opacity: 1;
@@ -5883,6 +5874,13 @@ button.add-circle:hover {
 .soft-pointer[data-control="true"] .soft-pointer-glass,
 .soft-pointer[data-text="true"] .soft-pointer-glass {
   opacity: 0;
+}
+.soft-pointer[data-integrated="true"] {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7),
+    0 3px 14px rgba(66, 58, 42, 0.06);
 }
 @media (prefers-reduced-motion: reduce) {
   .soft-pointer-glass {

@@ -11,8 +11,13 @@ export default function SoftCursor() {
     let x = 0;
     let y = 0;
     let visible = false;
+    let activeControl: HTMLElement | null = null;
+    let followUntil = 0;
     const hide = () => {
       visible = false;
+      activeControl = null;
+      cancelAnimationFrame(frame);
+      frame = 0;
       node.style.opacity = "0";
     };
     const draw = () => {
@@ -26,11 +31,11 @@ export default function SoftCursor() {
         'button:not(:disabled), a[href], summary, select, [role="button"], input[type="checkbox"], input[type="radio"]',
       );
       const box = control?.getBoundingClientRect();
-      // Reserve the morph for small controls; keep the arrow on larger surfaces.
+      const integrated = control?.dataset.cursor === "integrate";
+      // Larger account controls opt into the same shape-matching pointer.
       const magnet =
         box &&
-        box.width <= 120 &&
-        box.height <= 48 &&
+        (integrated || (box.width <= 120 && box.height <= 48)) &&
         !control?.matches('select, a[href], [role="button"]') &&
         !control?.closest("svg");
       const width = editing ? 2 : magnet ? box.width : 16;
@@ -43,12 +48,22 @@ export default function SoftCursor() {
           ? getComputedStyle(control!).borderRadius
           : "4px";
       node.dataset.control = String(!editing && Boolean(magnet));
+      node.dataset.integrated = String(!editing && Boolean(magnet) && integrated);
       node.dataset.text = String(Boolean(editing));
       node.style.width = `${width}px`;
       node.style.height = `${height}px`;
       node.style.borderRadius = radius;
       node.style.transform = `translate3d(${left}px, ${top}px, 0)`;
       node.style.opacity = "1";
+      const nextControl = magnet && !editing ? control ?? null : null;
+      if (nextControl !== activeControl) {
+        activeControl = nextControl;
+        followUntil = performance.now() + 650;
+      }
+      // Follow the button's spring animation even when the mouse stops moving.
+      if (integrated && magnet && performance.now() < followUntil) {
+        frame = requestAnimationFrame(draw);
+      }
     };
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(draw);
@@ -79,6 +94,7 @@ export default function SoftCursor() {
       capture: true,
     });
     window.addEventListener("blur", hide);
+    window.addEventListener("resize", schedule);
     return () => {
       cancelAnimationFrame(frame);
       document.documentElement.classList.remove("soft-pointer-enabled");
@@ -87,6 +103,7 @@ export default function SoftCursor() {
       document.removeEventListener("pointerleave", hide);
       document.removeEventListener("scroll", schedule, true);
       window.removeEventListener("blur", hide);
+      window.removeEventListener("resize", schedule);
     };
   }, []);
   return (

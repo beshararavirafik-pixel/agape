@@ -723,12 +723,14 @@ export default function Planner() {
             <>
               <div className="segmented">
                 <button
+                  data-cursor="integrate"
                   aria-pressed={authMode === "login"}
                   onClick={() => setAuthMode("login")}
                 >
                   Sign in
                 </button>
                 <button
+                  data-cursor="integrate"
                   aria-pressed={authMode === "signup"}
                   onClick={() => setAuthMode("signup")}
                 >
@@ -737,7 +739,8 @@ export default function Planner() {
               </div>
               {googleAvailable && authMode !== "reset" && (
                 <button
-                  className={`google-login${authMode === "signup" ? " google-login-signup" : ""}`}
+                  className="google-login"
+                  data-cursor="integrate"
                   type="button"
                   disabled={busy}
                   onClick={googleLogin}
