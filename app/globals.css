@@ -5729,34 +5729,37 @@ button.add-circle:hover {
   color: var(--ink);
   font-weight: 500;
   letter-spacing: 0.01em;
-  transition: background 180ms ease, box-shadow 180ms ease, border-color 180ms ease,
-    transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: box-shadow 180ms ease, border-color 180ms ease, color 180ms ease;
 }
 .google-login::before {
   content: "";
   position: absolute;
-  inset: -65% -15%;
+  inset: 0;
   z-index: -1;
-  border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.75), transparent 65%);
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(220, 232, 209, 0.95), rgba(204, 221, 190, 0.82));
   opacity: 0;
-  transform: translateY(35%) scale(0.7);
-  transition: opacity 240ms ease, transform 550ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: opacity 180ms ease;
   pointer-events: none;
 }
-.google-login:is(:hover, :focus-visible):not(:disabled) {
-  border-color: rgba(255, 255, 255, 0.95);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.6));
-  box-shadow: 0 6px 22px rgba(66, 58, 42, 0.09), inset 0 1px 0 #fff;
-  transform: translateY(-2px) scale(1.018);
+.google-login:is(:hover, :focus-visible, [data-pointer-active="true"]):not(:disabled) {
+  border-color: #9aaa8b;
+  color: #283323;
+  box-shadow: 0 4px 16px rgba(71, 91, 55, 0.12), inset 0 1px 0 #fff;
+  transform: none;
 }
-.google-login:is(:hover, :focus-visible):not(:disabled)::before {
+.google-login:is(:hover, :focus-visible, [data-pointer-active="true"]):not(:disabled)::before {
   opacity: 1;
-  transform: translateY(-5%) scale(1.1);
 }
 .google-login:active:not(:disabled) {
-  transform: translateY(0) scale(0.985);
-  transition-duration: 100ms;
+  transform: none;
+  box-shadow: inset 0 2px 5px rgba(71, 91, 55, 0.16);
+}
+.auth-card .segmented button:is(:hover, :focus-visible, [data-pointer-active="true"]):not(:disabled) {
+  background: #d5e2c9;
+  color: #283323;
+  box-shadow: inset 0 0 0 1px #9aaa8b;
+  transform: none;
 }
 .google-login-mark {
   width: 20px;
@@ -5788,13 +5791,7 @@ button.add-circle:hover {
   background: transparent;
   border-radius: 4px;
   will-change: transform;
-  transition:
-    transform 90ms ease-out,
-    width 300ms cubic-bezier(0.34, 1.55, 0.45, 1),
-    height 300ms cubic-bezier(0.34, 1.55, 0.45, 1),
-    border-radius 260ms cubic-bezier(0.34, 1.35, 0.45, 1),
-    background 140ms ease,
-    opacity 100ms ease;
+  transition: opacity 100ms ease;
 }
 .soft-pointer-arrow {
   position: absolute;

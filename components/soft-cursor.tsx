@@ -12,9 +12,9 @@ export default function SoftCursor() {
     let y = 0;
     let visible = false;
     let activeControl: HTMLElement | null = null;
-    let followUntil = 0;
     const hide = () => {
       visible = false;
+      activeControl?.removeAttribute("data-pointer-active");
       activeControl = null;
       cancelAnimationFrame(frame);
       frame = 0;
@@ -30,40 +30,22 @@ export default function SoftCursor() {
       const control = element?.closest<HTMLElement>(
         'button:not(:disabled), a[href], summary, select, [role="button"], input[type="checkbox"], input[type="radio"]',
       );
-      const box = control?.getBoundingClientRect();
-      const integrated = control?.dataset.cursor === "integrate";
-      // Larger account controls opt into the same shape-matching pointer.
-      const magnet =
-        box &&
-        (integrated || (box.width <= 120 && box.height <= 48)) &&
-        !control?.matches('select, a[href], [role="button"]') &&
-        !control?.closest("svg");
-      const width = editing ? 2 : magnet ? box.width : 16;
-      const height = editing ? 20 : magnet ? box.height : 21;
-      const left = editing ? x - 1 : magnet ? box.left : x - 2;
-      const top = editing ? y - 10 : magnet ? box.top : y - 2;
-      const radius = editing
-        ? "1px"
-        : magnet
-          ? getComputedStyle(control!).borderRadius
-          : "4px";
-      node.dataset.control = String(!editing && Boolean(magnet));
-      node.dataset.integrated = String(!editing && Boolean(magnet) && integrated);
-      node.dataset.text = String(Boolean(editing));
-      node.style.width = `${width}px`;
-      node.style.height = `${height}px`;
-      node.style.borderRadius = radius;
-      node.style.transform = `translate3d(${left}px, ${top}px, 0)`;
-      node.style.opacity = "1";
-      const nextControl = magnet && !editing ? control ?? null : null;
+      const integrated = !editing && control?.dataset.cursor === "integrate";
+      const nextControl = integrated ? control ?? null : null;
       if (nextControl !== activeControl) {
+        activeControl?.removeAttribute("data-pointer-active");
         activeControl = nextControl;
-        followUntil = performance.now() + 650;
+        activeControl?.setAttribute("data-pointer-active", "true");
       }
-      // Follow the button's spring animation even when the mouse stops moving.
-      if (integrated && magnet && performance.now() < followUntil) {
-        frame = requestAnimationFrame(draw);
-      }
+      // The control owns its highlight. Fade the pointer at its real location
+      // instead of stretching a moving overlay across the page.
+      node.dataset.integrated = String(Boolean(integrated));
+      node.dataset.text = String(Boolean(editing));
+      node.style.width = editing ? "2px" : "16px";
+      node.style.height = editing ? "20px" : "21px";
+      node.style.borderRadius = editing ? "1px" : "4px";
+      node.style.transform = `translate3d(${editing ? x - 1 : x - 2}px, ${editing ? y - 10 : y - 2}px, 0)`;
+      node.style.opacity = integrated ? "0" : "1";
     };
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(draw);
@@ -96,7 +78,7 @@ export default function SoftCursor() {
     window.addEventListener("blur", hide);
     window.addEventListener("resize", schedule);
     return () => {
-      cancelAnimationFrame(frame);
+      hide();
       document.documentElement.classList.remove("soft-pointer-enabled");
       media.removeEventListener("change", sync);
       document.removeEventListener("pointermove", move);
