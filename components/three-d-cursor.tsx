@@ -123,18 +123,16 @@ export default function ThreeDCursor() {
       <svg viewBox="0 0 20 28" focusable="false">
         <defs>
           <linearGradient id="cursor-chrome" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#fff" />
-            <stop offset="0.18" stopColor="#748ca3" />
-            <stop offset="0.34" stopColor="#f9fcff" />
-            <stop offset="0.52" stopColor="#405266" />
-            <stop offset="0.68" stopColor="#edf4fa" />
-            <stop offset="0.84" stopColor="#8296a8" />
-            <stop offset="1" stopColor="#fff" />
+            <stop offset="0" stopColor="#fff" stopOpacity="0.96" />
+            <stop offset="0.22" stopColor="#dce6ec" stopOpacity="0.84" />
+            <stop offset="0.48" stopColor="#fff" stopOpacity="0.94" />
+            <stop offset="0.76" stopColor="#c8d5de" stopOpacity="0.84" />
+            <stop offset="1" stopColor="#fff" stopOpacity="0.96" />
           </linearGradient>
           <linearGradient id="cursor-face" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#fff" />
-            <stop offset="0.52" stopColor="#f7f7f5" />
-            <stop offset="1" stopColor="#dfe8ef" />
+            <stop offset="0" stopColor="#fff" stopOpacity="0.74" />
+            <stop offset="0.52" stopColor="#f7f8f7" stopOpacity="0.5" />
+            <stop offset="1" stopColor="#e5edf2" stopOpacity="0.66" />
           </linearGradient>
           <filter
             id="cursor-shadow"
@@ -147,25 +145,39 @@ export default function ThreeDCursor() {
           </filter>
         </defs>
         <path
-          d="M1 1 1 22.7 5.8 18.1 9.1 26.3 12.5 24.9 9.2 16.7 18.6 16.4Z"
-          transform="translate(.7 .9)"
-          fill="#1c2024"
-          opacity=".3"
+          d="M1.4 1.4Q1 .5 2 1.2l16 12.6q1.5 1.1-.4 1.6l-7.5 1.8 3.7 7.5q.7 1.5-.8 2.2l-1.6.7q-1.5.7-2.2-.8l-3.7-7.8-3.1 3.4q-1.4 1.5-1.4-.6Z"
+          transform="translate(.45 .8)"
+          fill="#687c8b"
+          opacity=".16"
           filter="url(#cursor-shadow)"
         />
         <path
-          d="M1 1 1 22.7 5.8 18.1 9.1 26.3 12.5 24.9 9.2 16.7 18.6 16.4Z"
-          fill="#252a30"
-          stroke="#202328"
-          strokeWidth="1.5"
+          d="M1.4 1.4Q1 .5 2 1.2l16 12.6q1.5 1.1-.4 1.6l-7.5 1.8 3.7 7.5q.7 1.5-.8 2.2l-1.6.7q-1.5.7-2.2-.8l-3.7-7.8-3.1 3.4q-1.4 1.5-1.4-.6Z"
+          fill="url(#cursor-face)"
+          stroke="url(#cursor-chrome)"
+          strokeWidth="1.05"
           strokeLinejoin="round"
+          strokeLinecap="round"
         />
         <path
-          d="M2.2 3.1 2.2 19.8 5.8 16.4 8.2 15.3Z"
+          d="M2.7 3.1 2.6 18.4l3-3.1 3.1-.8Z"
           fill="url(#cursor-face)"
+          opacity=".82"
         />
-        <path d="m5.8 16.4 3.3 8.2 2-0.8-3.2-8.1Z" fill="url(#cursor-chrome)" />
-        <path d="m10 14.9 6.5 1.2-6.8.2Z" fill="#fff" opacity=".76" />
+        <path
+          d="m5.9 15.4 3.5 7.4 1.8-.8-3.3-7.1Z"
+          fill="url(#cursor-chrome)"
+          opacity=".9"
+        />
+        <path
+          d="m3.2 2.9 12.9 10.2"
+          fill="none"
+          stroke="#fff"
+          strokeWidth=".65"
+          strokeLinecap="round"
+          opacity=".7"
+        />
+        <path d="m10 14.5 5.8.2-5.5 1.2Z" fill="#fff" opacity=".68" />
       </svg>
     </div>
   );
