@@ -81,9 +81,18 @@ test("the rounded frosted pointer migrates into options and yields to the text c
   ]) {
     fireEvent.pointerMove(button);
     fireEvent.pointerMove(area);
-    assert.equal(cursor.dataset.hidden, "true");
+    assert.equal(cursor.dataset.hidden, "false");
     assert.equal(cursor.dataset.interactive, "false");
+    assert.equal(cursor.dataset.morph, "text");
+    assert.equal(cursor.style.width, "8px");
+    assert.equal(cursor.style.height, "20px");
   }
+
+  view.getByRole("searchbox").focus();
+  fireEvent.keyDown(window, { key: "a" });
+  assert.equal(cursor.dataset.hidden, "true");
+  fireEvent.pointerMove(view.getByRole("searchbox"));
+  assert.equal(cursor.dataset.hidden, "false");
 
   Object.defineProperty(button, "getBoundingClientRect", {
     configurable: true,

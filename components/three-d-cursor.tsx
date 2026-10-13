@@ -4,6 +4,8 @@ import { useEffect, useRef } from "react";
 
 const textTargets =
   'input:not([type]), input[type="text"], input[type="search"], input[type="email"], input[type="password"], input[type="tel"], input[type="url"], input[type="number"], textarea, [contenteditable="true"], [role="textbox"]';
+const searchTargets =
+  '.search:has(input:not(:disabled):not([readonly])), input[type="search"]:not(:disabled):not([readonly]), input[aria-label^="Search"]:not(:disabled):not([readonly]), input[placeholder^="Search"]:not(:disabled):not([readonly])';
 const interactiveTargets =
   'a, button, [role="button"], [role="option"], [role="menuitem"], [role="tab"], select, summary, label, input[type="checkbox"], input[type="radio"]';
 const cursorWidth = 20;
@@ -151,6 +153,18 @@ export default function ThreeDCursor() {
       if (event.pointerType === "touch") return;
 
       const target = event.target instanceof Element ? event.target : null;
+      if (target?.closest(searchTargets)) {
+        resetMotion();
+        cursor.dataset.hidden = "false";
+        cursor.dataset.interactive = "false";
+        cursor.dataset.morph = "text";
+        cursor.style.left = `${event.clientX - 4}px`;
+        cursor.style.top = `${event.clientY - 10}px`;
+        cursor.style.width = "8px";
+        cursor.style.height = "20px";
+        cursor.style.borderRadius = "4px";
+        return;
+      }
       const isTextEntry = Boolean(
         target?.closest(textTargets) ||
         target?.closest(".search")?.querySelector(textTargets),
@@ -180,6 +194,26 @@ export default function ThreeDCursor() {
       cursor.dataset.hidden = "true";
       resetMotion();
     };
+    const type = (event: KeyboardEvent) => {
+      const active = document.activeElement;
+      if (
+        active instanceof Element &&
+        active.closest(searchTargets) &&
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        (event.key.length === 1 ||
+          [
+            "Backspace",
+            "Delete",
+            "ArrowLeft",
+            "ArrowRight",
+            "Home",
+            "End",
+          ].includes(event.key))
+      )
+        cursor.dataset.hidden = "true";
+    };
 
     window.addEventListener("pointermove", update, { passive: true });
     window.addEventListener("pointerdown", press, { passive: true });
@@ -187,6 +221,7 @@ export default function ThreeDCursor() {
     window.addEventListener("pointercancel", release, { passive: true });
     document.documentElement.addEventListener("pointerleave", leave);
     window.addEventListener("blur", leave);
+    window.addEventListener("keydown", type);
 
     return () => {
       resetMotion();
@@ -197,6 +232,7 @@ export default function ThreeDCursor() {
       window.removeEventListener("pointercancel", release);
       document.documentElement.removeEventListener("pointerleave", leave);
       window.removeEventListener("blur", leave);
+      window.removeEventListener("keydown", type);
     };
   }, []);
 
@@ -211,6 +247,7 @@ export default function ThreeDCursor() {
       aria-hidden="true"
     >
       <span className="three-d-cursor-surface" />
+      <span className="three-d-cursor-text" />
       <div ref={arrowRef} className="three-d-cursor-arrow">
         <span className="three-d-cursor-glass" />
         <svg viewBox="0 0 22 22" preserveAspectRatio="none" focusable="false">

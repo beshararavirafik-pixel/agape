@@ -2580,6 +2580,17 @@ html.agape-3d-cursor
   ) {
   cursor: text !important;
 }
+html.agape-3d-cursor
+  body
+  :is(
+    .search:has(input:not(:disabled):not([readonly])),
+    .search:has(input:not(:disabled):not([readonly])) *,
+    input[type="search"]:not(:disabled):not([readonly]),
+    input[aria-label^="Search"]:not(:disabled):not([readonly]),
+    input[placeholder^="Search"]:not(:disabled):not([readonly])
+  ) {
+  cursor: none !important;
+}
 .three-d-cursor {
   position: fixed;
   z-index: 10000;
@@ -2633,6 +2644,55 @@ html.agape-3d-cursor
 .three-d-cursor[data-hidden="true"] {
   visibility: hidden;
   opacity: 0;
+}
+.three-d-cursor-text {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  border-radius: 2px;
+  background: rgb(31 39 46 / 80%);
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  box-shadow:
+    0 0 0 0.6px rgb(255 255 255 / 85%),
+    0 1px 2px rgb(0 0 0 / 18%);
+  visibility: hidden;
+  opacity: 0;
+  transform: translateX(-50%) scaleY(0.8);
+  transition:
+    opacity 100ms ease,
+    transform 200ms cubic-bezier(0.22, 1.18, 0.36, 1);
+}
+.three-d-cursor-text::before,
+.three-d-cursor-text::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 7px;
+  height: 2px;
+  border-radius: 2px;
+  background: inherit;
+  box-shadow: 0 0 0 0.6px rgb(255 255 255 / 85%);
+  transform: translateX(-50%);
+}
+.three-d-cursor-text::before {
+  top: 0;
+}
+.three-d-cursor-text::after {
+  bottom: 0;
+}
+.three-d-cursor[data-morph="text"] .three-d-cursor-arrow {
+  visibility: hidden;
+}
+.three-d-cursor[data-morph="text"] .three-d-cursor-text {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) scaleY(1);
+}
+.three-d-cursor[data-morph="text"][data-pressed="true"] .three-d-cursor-text {
+  transform: translateX(-50%) scaleY(0.92);
 }
 .three-d-cursor[data-interactive="true"] {
   border-color: rgb(255 255 255 / 90%);
@@ -2697,6 +2757,7 @@ html.agape-3d-cursor
 @media (pointer: coarse), (prefers-reduced-motion: reduce) {
   .three-d-cursor,
   .three-d-cursor-arrow,
+  .three-d-cursor-text,
   .three-d-cursor svg,
   .three-d-cursor-glass,
   .three-d-cursor-surface {
