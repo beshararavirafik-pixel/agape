@@ -19,6 +19,7 @@ import "./globals.css";
 import "./invitation.css";
 import "./wedding-builder.css";
 import DismissMenus from "@/components/dismiss-menus";
+import ThreeDCursor from "@/components/three-d-cursor";
 export const metadata: Metadata = {
   title: "Agapē",
   description: "A thoughtful space for planning your wedding or engagement.",
@@ -41,6 +42,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       >
         {children}
         <DismissMenus />
+        <ThreeDCursor />
       </body>
     </html>
   );
