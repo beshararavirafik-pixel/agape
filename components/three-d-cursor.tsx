@@ -130,9 +130,9 @@ export default function ThreeDCursor() {
             <stop offset="1" stopColor="#fff" stopOpacity="0.96" />
           </linearGradient>
           <linearGradient id="cursor-face" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#fff" stopOpacity="0.74" />
-            <stop offset="0.52" stopColor="#f7f8f7" stopOpacity="0.5" />
-            <stop offset="1" stopColor="#e5edf2" stopOpacity="0.66" />
+            <stop offset="0" stopColor="#34434d" stopOpacity="0.92" />
+            <stop offset="0.52" stopColor="#202a31" stopOpacity="0.84" />
+            <stop offset="1" stopColor="#465660" stopOpacity="0.9" />
           </linearGradient>
           <filter
             id="cursor-shadow"
