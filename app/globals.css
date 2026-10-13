@@ -1645,6 +1645,69 @@ td select {
   grid-template-columns: 1fr 1fr;
   gap: 0 16px;
 }
+.bulk-guest-entry {
+  margin-top: 16px;
+}
+.bulk-guest-row {
+  position: relative;
+  min-width: 0;
+  margin: 18px 0;
+  padding: 12px 0 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+.bulk-guest-row legend {
+  padding-right: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.bulk-guest-options {
+  margin-top: 8px;
+}
+.bulk-guest-options summary {
+  color: var(--muted);
+  font-size: 12px;
+}
+.bulk-guest-options[open] .form-grid {
+  margin-top: 8px;
+}
+.modal .bulk-guest-remove {
+  position: absolute;
+  top: -12px;
+  right: 0;
+  width: 28px;
+  height: 28px;
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: var(--paper);
+  border-radius: 50%;
+}
+.bulk-guest-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.bulk-guest-tools button {
+  min-height: 36px;
+  padding: 7px 12px;
+  font-size: 13px;
+}
+.bulk-guest-paste {
+  margin-top: 16px;
+}
+.bulk-guest-paste small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+@media (max-width: 600px) {
+  .modal .bulk-guest-row .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 @media (min-width: 1600px) {
   .celebration-scene {
     min-height: 575px;

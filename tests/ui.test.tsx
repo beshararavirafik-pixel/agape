@@ -93,19 +93,119 @@ test("guest assignment sync, decline unseating, guest creation and device persis
   fireEvent.click(
     within(row).getByRole("button", { name: "RSVP for Amelia Carter" }),
   );
-  fireEvent.click(within(screen.getByRole("listbox", { name: "RSVP for Amelia Carter" })).getByRole("option", { name: "Declined" }));
+  fireEvent.click(
+    within(
+      screen.getByRole("listbox", { name: "RSVP for Amelia Carter" }),
+    ).getByRole("option", { name: "Declined" }),
+  );
   assert.ok(within(row).getByText("Unseated"));
   fireEvent.click(screen.getByRole("button", { name: "Add guest" }));
   fireEvent.change(screen.getByLabelText("Full name"), {
     target: { value: "Test Guest" },
   });
-  fireEvent.change(screen.getByLabelText("Household"), {
-    target: { value: "Test family" },
+  assert.equal(screen.queryByLabelText("Household"), null);
+  assert.equal(screen.queryByLabelText("Group"), null);
+  assert.equal(
+    screen.queryByRole("button", { name: "Add family member" }),
+    null,
+  );
+  const beforeBatch = JSON.parse(localStorage.getItem("ever-after-demo")!);
+  fireEvent.click(screen.getByRole("button", { name: "Add more people" }));
+  fireEvent.change(screen.getByLabelText("Full name 2"), {
+    target: { value: "Discarded Guest" },
   });
-  fireEvent.change(screen.getByLabelText("Group"), {
-    target: { value: "Friends" },
+  fireEvent.click(screen.getByRole("button", { name: "Add more people" }));
+  fireEvent.change(screen.getByLabelText("Full name 3"), {
+    target: { value: "Bulk Guest Three" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Remove guest 2" }));
+  assert.equal(
+    (screen.getByLabelText("Full name 2") as HTMLInputElement).value,
+    "Bulk Guest Three",
+  );
+  fireEvent.click(
+    screen.getByText("Email & dietary needs", { selector: "summary" }),
+  );
+  fireEvent.change(screen.getByLabelText("Email 2"), {
+    target: { value: "three@example.com" },
+  });
+  fireEvent.change(screen.getByLabelText("Meal / dietary needs 2"), {
+    target: { value: "Vegetarian" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Add more people" }));
+  fireEvent.change(screen.getByLabelText("Full name 3"), {
+    target: { value: "   " },
+  });
+  fireEvent.submit(
+    screen.getByRole("button", { name: "Save guests" }).closest("form")!,
+  );
+  assert.equal(
+    JSON.parse(localStorage.getItem("ever-after-demo")!).guests.length,
+    beforeBatch.guests.length,
+  );
+  fireEvent.input(screen.getByLabelText("Full name 3"), {
+    target: { value: "Bulk Guest Four" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Save guests" }));
+  const batched = JSON.parse(localStorage.getItem("ever-after-demo")!);
+  assert.equal(batched.guests.length, beforeBatch.guests.length + 3);
+  assert.deepEqual(batched.family_links, beforeBatch.family_links);
+  const added = batched.guests.filter((guest: any) =>
+    ["Test Guest", "Bulk Guest Three", "Bulk Guest Four"].includes(guest.name),
+  );
+  assert.equal(new Set(added.map((guest: any) => guest.id)).size, 3);
+  assert.ok(
+    added.every(
+      (guest: any) =>
+        guest.household === "" &&
+        guest.family_name === null &&
+        guest.guest_group === "Other" &&
+        guest.rsvp === "pending",
+    ),
+  );
+  assert.equal(
+    added.find((guest: any) => guest.name === "Bulk Guest Three").meal,
+    "Vegetarian",
+  );
+  assert.equal(
+    added.find((guest: any) => guest.name === "Bulk Guest Three").email,
+    "three@example.com",
+  );
+  fireEvent.click(
+    screen.getByRole("button", { name: "Open Bulk Guest Three" }),
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Edit guest" }));
+  fireEvent.change(screen.getByLabelText("Email", { exact: true }), {
+    target: { value: "updated@example.com" },
   });
   fireEvent.click(screen.getByRole("button", { name: "Save guest" }));
+  const editedBatch = JSON.parse(localStorage.getItem("ever-after-demo")!);
+  const editedGuest = editedBatch.guests.find(
+    (guest: any) => guest.name === "Bulk Guest Three",
+  );
+  assert.equal(editedGuest.email, "updated@example.com");
+  assert.equal(editedGuest.household, "");
+  assert.equal(editedGuest.family_name, null);
+  assert.equal(editedGuest.guest_group, "Other");
+  assert.deepEqual(editedBatch.family_links, beforeBatch.family_links);
+  fireEvent.click(
+    screen.getByRole("button", { name: "Open Bulk Guest Three" }),
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Add guest" }));
+  fireEvent.click(screen.getByRole("button", { name: "Paste a list" }));
+  fireEvent.change(screen.getByLabelText("Paste guest names"), {
+    target: {
+      value: "  Paste Person One\n\nPaste Person Two\r\nPaste Person Three  ",
+    },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Save guests" }));
+  const pasted = JSON.parse(localStorage.getItem("ever-after-demo")!);
+  assert.equal(pasted.guests.length, batched.guests.length + 3);
+  assert.ok(
+    ["Paste Person One", "Paste Person Two", "Paste Person Three"].every(
+      (name) => pasted.guests.some((guest: any) => guest.name === name),
+    ),
+  );
   assert.ok(screen.getByText("Test Guest"));
   fireEvent.click(screen.getByRole("button", { name: "Remove Test Guest" }));
   fireEvent.click(screen.getByRole("button", { name: "Delete guest" }));
@@ -127,7 +227,7 @@ test("guest assignment sync, decline unseating, guest creation and device persis
   );
   fireEvent.change(
     screen.getByRole("combobox", { name: "Filter guest group" }),
-    { target: { value: "Friends" } },
+    { target: { value: "Other" } },
   );
   assert.ok(screen.getByText("Test Guest"));
   assert.equal(screen.queryByText("Olivia Bennett"), null);

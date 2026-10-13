@@ -10,7 +10,10 @@ test("migration, atomic saves, revision conflicts, and cross-event seating const
   );
   await db.exec(
     readFileSync(
-      new URL("../supabase/migrations/20260930161250_event_planning_foundation.sql", import.meta.url),
+      new URL(
+        "../supabase/migrations/20260930161250_event_planning_foundation.sql",
+        import.meta.url,
+      ),
       "utf8",
     ),
   );
@@ -96,11 +99,40 @@ test("migration, atomic saves, revision conflicts, and cross-event seating const
     title: "White roses",
     storage_path: `${s.event.id}/roses.jpg`,
   });
+  const bulkGuests = ["Bulk One", "Bulk Two", "Bulk Three"].map((name) => ({
+    ...s.guests[0],
+    id: crypto.randomUUID(),
+    name,
+    household: "",
+    family_name: null,
+    guest_group: "Other",
+    rsvp: "pending" as const,
+  }));
+  s.guests.push(...bulkGuests);
   const saved = await db.query<{ save_plan: number }>(
     "select save_plan($1,0)",
     [JSON.stringify(s)],
   );
   assert.equal(saved.rows[0].save_plan, 1);
+  const persistedBatch = await db.query<{
+    household: string;
+    family_name: string | null;
+    guest_group: string;
+    rsvp: string;
+  }>(
+    "select household,family_name,guest_group,rsvp from guests where id in ($1,$2,$3)",
+    bulkGuests.map((guest) => guest.id),
+  );
+  assert.equal(persistedBatch.rows.length, 3);
+  assert.ok(
+    persistedBatch.rows.every(
+      (guest) =>
+        guest.household === "" &&
+        guest.family_name === null &&
+        guest.guest_group === "Other" &&
+        guest.rsvp === "pending",
+    ),
+  );
   const savedChurch = await db.query<{ details: { layout: string } }>(
     "select details from planning_records where id=$1",
     [churchId],

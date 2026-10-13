@@ -200,6 +200,17 @@ export default function Planner() {
   const [familyDraft, setFamilyDraft] = useState<
     { name: string; relationship: string; existing_id?: string }[]
   >([]);
+  const [additionalGuests, setAdditionalGuests] = useState<string[]>([]);
+  const [bulkNames, setBulkNames] = useState("");
+  const [pasteGuests, setPasteGuests] = useState(false);
+  function beginGuest(guest: Guest | null = null) {
+    setGuestEdit(guest);
+    setFamilyDraft([]);
+    setAdditionalGuests([]);
+    setBulkNames("");
+    setPasteGuests(false);
+    setModal("guest");
+  }
   useEffect(() => {
     const close = (e: KeyboardEvent) => {
       if (e.key === "Escape") setMobile(false);
@@ -742,13 +753,34 @@ export default function Planner() {
                   disabled={busy}
                   onClick={googleLogin}
                 >
-                  <svg className="google-login-mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                    <path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.38a4.6 4.6 0 0 1-2 3.02v2.52h3.24c1.9-1.75 2.98-4.33 2.98-7.37Z" />
-                    <path fill="#34A853" d="M12 22c2.7 0 4.96-.9 6.62-2.4l-3.24-2.52c-.9.6-2.05.96-3.38.96-2.6 0-4.81-1.76-5.6-4.13H3.05v2.6A10 10 0 0 0 12 22Z" />
-                    <path fill="#FBBC05" d="M6.4 13.91a6 6 0 0 1 0-3.82v-2.6H3.05a10 10 0 0 0 0 9.02l3.35-2.6Z" />
-                    <path fill="#EA4335" d="M12 5.96c1.47 0 2.79.51 3.83 1.51L18.7 4.6A9.62 9.62 0 0 0 12 2a10 10 0 0 0-8.95 5.49l3.35 2.6C7.19 7.72 9.4 5.96 12 5.96Z" />
+                  <svg
+                    className="google-login-mark"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    <path
+                      fill="#4285F4"
+                      d="M21.6 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.38a4.6 4.6 0 0 1-2 3.02v2.52h3.24c1.9-1.75 2.98-4.33 2.98-7.37Z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 22c2.7 0 4.96-.9 6.62-2.4l-3.24-2.52c-.9.6-2.05.96-3.38.96-2.6 0-4.81-1.76-5.6-4.13H3.05v2.6A10 10 0 0 0 12 22Z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M6.4 13.91a6 6 0 0 1 0-3.82v-2.6H3.05a10 10 0 0 0 0 9.02l3.35-2.6Z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 5.96c1.47 0 2.79.51 3.83 1.51L18.7 4.6A9.62 9.62 0 0 0 12 2a10 10 0 0 0-8.95 5.49l3.35 2.6C7.19 7.72 9.4 5.96 12 5.96Z"
+                    />
                   </svg>
-                  <span>{authMode === "signup" ? "Sign up with Google" : "Sign in with Google"}</span>
+                  <span>
+                    {authMode === "signup"
+                      ? "Sign up with Google"
+                      : "Sign in with Google"}
+                  </span>
                 </button>
               )}
               <form onSubmit={auth}>
@@ -963,18 +995,10 @@ export default function Planner() {
           )}
           {page === "Guests & RSVPs" && (
             <GuestList
-              addGuest={() => {
-                setGuestEdit(null);
-                setFamilyDraft([]);
-                setModal("guest");
-              }}
+              addGuest={() => beginGuest()}
               state={state}
               change={change}
-              edit={(g) => {
-                setGuestEdit(g);
-                setFamilyDraft([]);
-                setModal("guest");
-              }}
+              edit={beginGuest}
             />
           )}
           {["inspiration", "decor"].includes(kind) && (
@@ -1469,7 +1493,13 @@ export default function Planner() {
           <section
             role="dialog"
             aria-modal="true"
-            aria-label={modal === "guest" ? "Guest details" : "Planning item"}
+            aria-label={
+              modal === "guest"
+                ? guestEdit
+                  ? "Guest details"
+                  : "Add guests"
+                : "Planning item"
+            }
             className="modal"
             onClick={(e) => e.stopPropagation()}
           >
@@ -1484,7 +1514,7 @@ export default function Planner() {
               {modal === "guest"
                 ? guestEdit
                   ? "Guest details"
-                  : "Someone you love"
+                  : "Add guests"
                 : edit
                   ? "The details"
                   : "A new little detail"}
@@ -1495,18 +1525,81 @@ export default function Planner() {
                 const f = new FormData(e.currentTarget);
                 const v = (k: string) => String(f.get(k) || "");
                 if (modal === "guest") {
-                  const g: Guest = {
-                    id: guestEdit?.id || uid(),
+                  const entries = [
+                    {
+                      id: guestEdit?.id || uid(),
+                      field: "name",
+                      name: v("name"),
+                      email: v("email"),
+                      meal: v("meal"),
+                    },
+                  ];
+                  if (!guestEdit) {
+                    entries.push(
+                      ...additionalGuests.map((id) => ({
+                        id,
+                        field: `name-${id}`,
+                        name: v(`name-${id}`),
+                        email: v(`email-${id}`),
+                        meal: v(`meal-${id}`),
+                      })),
+                    );
+                    const pasted = bulkNames
+                      .split(/\r?\n/)
+                      .map((name) => name.trim())
+                      .filter(Boolean);
+                    if (pasted.length && !entries[0].name.trim())
+                      entries.shift();
+                    entries.push(
+                      ...pasted.map((name) => ({
+                        id: uid(),
+                        field: "",
+                        name,
+                        email: "",
+                        meal: "Standard",
+                      })),
+                    );
+                  }
+                  const blank = entries.find((entry) => !entry.name.trim());
+                  if (blank) {
+                    const input = e.currentTarget.elements.namedItem(
+                      blank.field,
+                    ) as HTMLInputElement;
+                    input.setCustomValidity("Enter a guest's name.");
+                    input.reportValidity();
+                    input.focus();
+                    return;
+                  }
+                  const incoming: Guest[] = entries.map((entry) => ({
+                    id: entry.id,
                     event_id: state.event.id,
-                    name: v("name"),
-                    household: v("household"),
+                    name: entry.name.trim(),
+                    household: guestEdit ? v("household").trim() : "",
                     family_name: guestEdit?.family_name || null,
-                    guest_group: v("guest_group") || "Family",
-                    email: v("email"),
-                    meal: v("meal"),
+                    guest_group: guestEdit
+                      ? v("guest_group") || guestEdit.guest_group || "Other"
+                      : "Other",
+                    email: entry.email.trim(),
+                    meal: entry.meal.trim() || "Standard",
                     rsvp: guestEdit?.rsvp || "pending",
-                  };
-                  change(addFamily(state, g, familyDraft));
+                  }));
+                  if (guestEdit) {
+                    change(
+                      familyDraft.length
+                        ? addFamily(state, incoming[0], familyDraft)
+                        : {
+                            ...state,
+                            guests: state.guests.map((guest) =>
+                              guest.id === guestEdit.id ? incoming[0] : guest,
+                            ),
+                          },
+                    );
+                  } else {
+                    change({
+                      ...state,
+                      guests: [...state.guests, ...incoming],
+                    });
+                  }
                 } else {
                   const r: RecordItem = {
                     id: edit?.id || uid(),
@@ -1546,154 +1639,161 @@ export default function Planner() {
                     Full name
                     <input
                       name="name"
-                      required
+                      required={Boolean(guestEdit) || !bulkNames.trim()}
+                      onInput={(e) => e.currentTarget.setCustomValidity("")}
                       defaultValue={guestEdit?.name}
                       autoFocus
                     />
                   </label>
-                  <label>
-                    Group
-                    <input
-                      name="guest_group"
-                      list="guest-groups"
-                      defaultValue={guestEdit?.guest_group || "Family"}
-                    />
-                    <datalist id="guest-groups">
-                      {["Family", "Friends", "Work", "Other"].map((g) => (
-                        <option key={g} value={g} />
-                      ))}
-                    </datalist>
-                  </label>
-                  <label>
-                    Household
-                    <input
-                      name="household"
-                      defaultValue={guestEdit?.household}
-                      placeholder="e.g. The Bennett family"
-                    />
-                  </label>
-                  <fieldset className="family-editor">
-                    <legend>Invite together</legend>
-                    {guestEdit &&
-                      (state.family_links || [])
-                        .filter(
-                          (l) =>
-                            l.guest_id === guestEdit.id ||
-                            l.related_guest_id === guestEdit.id,
-                        )
-                        .map((l) => (
-                          <div className="ceremony-row" key={l.id}>
-                            <span>
-                              {
-                                state.guests.find(
-                                  (g) =>
-                                    g.id ===
-                                    (l.guest_id === guestEdit.id
-                                      ? l.related_guest_id
-                                      : l.guest_id),
-                                )?.name
-                              }{" "}
-                              ·{" "}
-                              {l.guest_id === guestEdit.id
-                                ? l.relationship
-                                : "Linked invitation"}
-                            </span>
+                  {guestEdit && (
+                    <>
+                      <label>
+                        Group
+                        <input
+                          name="guest_group"
+                          list="guest-groups"
+                          defaultValue={guestEdit?.guest_group || "Family"}
+                        />
+                        <datalist id="guest-groups">
+                          {["Family", "Friends", "Work", "Other"].map((g) => (
+                            <option key={g} value={g} />
+                          ))}
+                        </datalist>
+                      </label>
+                      <label>
+                        Household
+                        <input
+                          name="household"
+                          defaultValue={guestEdit?.household}
+                          placeholder="e.g. The Bennett family"
+                        />
+                      </label>
+                      <fieldset className="family-editor">
+                        <legend>Invite together</legend>
+                        {guestEdit &&
+                          (state.family_links || [])
+                            .filter(
+                              (l) =>
+                                l.guest_id === guestEdit.id ||
+                                l.related_guest_id === guestEdit.id,
+                            )
+                            .map((l) => (
+                              <div className="ceremony-row" key={l.id}>
+                                <span>
+                                  {
+                                    state.guests.find(
+                                      (g) =>
+                                        g.id ===
+                                        (l.guest_id === guestEdit.id
+                                          ? l.related_guest_id
+                                          : l.guest_id),
+                                    )?.name
+                                  }{" "}
+                                  ·{" "}
+                                  {l.guest_id === guestEdit.id
+                                    ? l.relationship
+                                    : "Linked invitation"}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    change({
+                                      ...state,
+                                      family_links: state.family_links?.filter(
+                                        (a) => a.id !== l.id,
+                                      ),
+                                    })
+                                  }
+                                >
+                                  Unlink
+                                </button>
+                              </div>
+                            ))}
+                        {familyDraft.map((r, i) => (
+                          <div className="family-row" key={i}>
+                            <select
+                              aria-label={`Relationship ${i + 1}`}
+                              value={r.relationship}
+                              onChange={(e) =>
+                                setFamilyDraft(
+                                  familyDraft.map((a, j) =>
+                                    j === i
+                                      ? { ...a, relationship: e.target.value }
+                                      : a,
+                                  ),
+                                )
+                              }
+                            >
+                              {relationships.map((a) => (
+                                <option key={a}>{a}</option>
+                              ))}
+                            </select>
+                            <input
+                              aria-label={`Family member ${i + 1}`}
+                              placeholder="New guest name"
+                              value={r.name}
+                              disabled={!!r.existing_id}
+                              onChange={(e) =>
+                                setFamilyDraft(
+                                  familyDraft.map((a, j) =>
+                                    j === i
+                                      ? { ...a, name: e.target.value }
+                                      : a,
+                                  ),
+                                )
+                              }
+                            />
+                            <select
+                              aria-label={`Existing guest ${i + 1}`}
+                              value={r.existing_id || ""}
+                              onChange={(e) =>
+                                setFamilyDraft(
+                                  familyDraft.map((a, j) =>
+                                    j === i
+                                      ? { ...a, existing_id: e.target.value }
+                                      : a,
+                                  ),
+                                )
+                              }
+                            >
+                              <option value="">New guest</option>
+                              {guests
+                                .filter((g) => g.id !== guestEdit?.id)
+                                .map((g) => (
+                                  <option key={g.id} value={g.id}>
+                                    {g.name}
+                                  </option>
+                                ))}
+                            </select>
                             <button
                               type="button"
                               onClick={() =>
-                                change({
-                                  ...state,
-                                  family_links: state.family_links?.filter(
-                                    (a) => a.id !== l.id,
-                                  ),
-                                })
+                                setFamilyDraft(
+                                  familyDraft.filter((_, j) => j !== i),
+                                )
                               }
                             >
-                              Unlink
+                              ×
                             </button>
                           </div>
                         ))}
-                    {familyDraft.map((r, i) => (
-                      <div className="family-row" key={i}>
-                        <select
-                          aria-label={`Relationship ${i + 1}`}
-                          value={r.relationship}
-                          onChange={(e) =>
-                            setFamilyDraft(
-                              familyDraft.map((a, j) =>
-                                j === i
-                                  ? { ...a, relationship: e.target.value }
-                                  : a,
-                              ),
-                            )
-                          }
-                        >
-                          {relationships.map((a) => (
-                            <option key={a}>{a}</option>
-                          ))}
-                        </select>
-                        <input
-                          aria-label={`Family member ${i + 1}`}
-                          placeholder="New guest name"
-                          value={r.name}
-                          disabled={!!r.existing_id}
-                          onChange={(e) =>
-                            setFamilyDraft(
-                              familyDraft.map((a, j) =>
-                                j === i ? { ...a, name: e.target.value } : a,
-                              ),
-                            )
-                          }
-                        />
-                        <select
-                          aria-label={`Existing guest ${i + 1}`}
-                          value={r.existing_id || ""}
-                          onChange={(e) =>
-                            setFamilyDraft(
-                              familyDraft.map((a, j) =>
-                                j === i
-                                  ? { ...a, existing_id: e.target.value }
-                                  : a,
-                              ),
-                            )
-                          }
-                        >
-                          <option value="">New guest</option>
-                          {guests
-                            .filter((g) => g.id !== guestEdit?.id)
-                            .map((g) => (
-                              <option key={g.id} value={g.id}>
-                                {g.name}
-                              </option>
-                            ))}
-                        </select>
                         <button
+                          aria-label="Add family member"
+                          title="Add family member"
+                          className="add-circle"
                           type="button"
                           onClick={() =>
-                            setFamilyDraft(
-                              familyDraft.filter((_, j) => j !== i),
-                            )
+                            setFamilyDraft([
+                              ...familyDraft,
+                              { name: "", relationship: "Relative" },
+                            ])
                           }
                         >
-                          ×
+                          <Plus size={18} />
                         </button>
-                      </div>
-                    ))}
-                    <button
-                      aria-label="Add family member"
-                      title="Add family member"
-                      className="add-circle"
-                      type="button"
-                      onClick={() =>
-                        setFamilyDraft([
-                          ...familyDraft,
-                          { name: "", relationship: "Relative" },
-                        ])
-                      }
-                    >
-                      <Plus size={18} />
-                    </button>
-                  </fieldset>
+                      </fieldset>
+                    </>
+                  )}
                   <label>
                     Email
                     <input
@@ -1709,6 +1809,102 @@ export default function Planner() {
                       defaultValue={guestEdit?.meal || "Standard"}
                     />
                   </label>
+                  {!guestEdit && (
+                    <div className="bulk-guest-entry">
+                      {additionalGuests.map((id, index) => (
+                        <fieldset className="bulk-guest-row" key={id}>
+                          <legend>Guest {index + 2}</legend>
+                          <button
+                            type="button"
+                            className="bulk-guest-remove"
+                            aria-label={`Remove guest ${index + 2}`}
+                            onClick={() =>
+                              setAdditionalGuests((rows) =>
+                                rows.filter((row) => row !== id),
+                              )
+                            }
+                          >
+                            <X size={16} />
+                          </button>
+                          <label>
+                            Full name {index + 2}
+                            <input
+                              name={`name-${id}`}
+                              required
+                              autoFocus
+                              onInput={(e) =>
+                                e.currentTarget.setCustomValidity("")
+                              }
+                            />
+                          </label>
+                          <details className="bulk-guest-options">
+                            <summary>Email &amp; dietary needs</summary>
+                            <div className="form-grid">
+                              <label>
+                                Email {index + 2}
+                                <input name={`email-${id}`} type="email" />
+                              </label>
+                              <label>
+                                Meal / dietary needs {index + 2}
+                                <input
+                                  name={`meal-${id}`}
+                                  defaultValue="Standard"
+                                />
+                              </label>
+                            </div>
+                          </details>
+                        </fieldset>
+                      ))}
+                      <div className="bulk-guest-tools">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setAdditionalGuests((rows) => [...rows, uid()])
+                          }
+                        >
+                          <Plus size={16} />
+                          Add more people
+                        </button>
+                        <button
+                          type="button"
+                          className="text-button"
+                          aria-expanded={pasteGuests}
+                          onClick={() => {
+                            setPasteGuests(!pasteGuests);
+                            if (pasteGuests) setBulkNames("");
+                          }}
+                        >
+                          {pasteGuests ? "Remove pasted list" : "Paste a list"}
+                        </button>
+                      </div>
+                      {pasteGuests && (
+                        <label className="bulk-guest-paste">
+                          Paste guest names
+                          <textarea
+                            aria-label="Paste guest names"
+                            aria-describedby="bulk-guest-paste-help"
+                            rows={4}
+                            value={bulkNames}
+                            onChange={(e) => {
+                              setBulkNames(e.target.value);
+                              const name =
+                                e.currentTarget.form?.elements.namedItem(
+                                  "name",
+                                ) as HTMLInputElement | null;
+                              name?.setCustomValidity("");
+                            }}
+                            placeholder={
+                              "Christine Ghattas\nMark Mansour\nMena Mansour"
+                            }
+                          />
+                          <small id="bulk-guest-paste-help">
+                            One name per line. You can paste a whole list
+                            without filling in the first guest.
+                          </small>
+                        </label>
+                      )}
+                    </div>
+                  )}
                 </>
               ) : (
                 <>
@@ -1873,7 +2069,12 @@ export default function Planner() {
                 </>
               )}
               <button className="primary">
-                Save {modal === "guest" ? "guest" : "detail"}
+                Save{" "}
+                {modal === "guest"
+                  ? !guestEdit && (additionalGuests.length || bulkNames.trim())
+                    ? "guests"
+                    : "guest"
+                  : "detail"}
               </button>
             </form>
           </section>
