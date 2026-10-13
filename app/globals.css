@@ -2588,9 +2588,11 @@ html.agape-3d-cursor
   overflow: visible;
   pointer-events: none;
   opacity: 1;
+  border: 1px solid transparent;
+  background: transparent;
   transform-origin: 2px 2px;
   transition: opacity 100ms ease;
-  will-change: left, top;
+  will-change: left, top, width, height, border-radius;
 }
 .three-d-cursor svg {
   position: absolute;
@@ -2602,42 +2604,62 @@ html.agape-3d-cursor
   filter: drop-shadow(0 2px 2px rgb(45 53 61 / 22%));
   transition:
     filter 160ms ease,
+    opacity 130ms ease,
     transform 140ms ease;
 }
 .three-d-cursor[data-hidden="true"] {
   opacity: 0;
 }
 .three-d-cursor[data-interactive="true"] {
-  transform: translateY(-1px);
+  border-color: rgb(255 255 255 / 42%);
+  background: rgb(255 255 255 / 8%);
+  box-shadow:
+    0 5px 16px rgb(38 40 36 / 8%),
+    inset 0 1px 1px rgb(255 255 255 / 46%);
+  backdrop-filter: blur(0.8px);
+  transition:
+    left 240ms cubic-bezier(0.22, 0.78, 0.22, 1),
+    top 240ms cubic-bezier(0.22, 0.78, 0.22, 1),
+    width 240ms cubic-bezier(0.22, 0.78, 0.22, 1),
+    height 240ms cubic-bezier(0.22, 0.78, 0.22, 1),
+    border-radius 240ms cubic-bezier(0.22, 0.78, 0.22, 1),
+    opacity 100ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease;
 }
 .three-d-cursor-surface {
   position: absolute;
-  top: -2px;
-  left: -2px;
-  width: 14px;
-  height: 14px;
-  border: 1px solid rgb(255 255 255 / 70%);
-  border-radius: 50%;
-  background: rgb(255 255 255 / 20%);
+  inset: 0;
+  border: 1px solid rgb(255 255 255 / 38%);
+  border-radius: inherit;
+  background: linear-gradient(
+    142deg,
+    rgb(255 255 255 / 19%),
+    rgb(255 255 255 / 8%) 58%,
+    rgb(221 227 231 / 13%)
+  );
   box-shadow:
-    0 1px 5px rgb(38 40 36 / 12%),
-    inset 0 1px 1px rgb(255 255 255 / 62%);
+    0 4px 12px rgb(38 40 36 / 7%),
+    inset 0 1px 1px rgb(255 255 255 / 48%);
+  backdrop-filter: blur(0.8px);
   opacity: 0;
-  transform: scale(0.55);
-  transform-origin: 50% 50%;
-  transition:
-    opacity 150ms ease,
-    transform 180ms cubic-bezier(0.22, 0.78, 0.22, 1);
+  transition: opacity 180ms ease;
 }
 .three-d-cursor[data-interactive="true"] svg {
-  filter: drop-shadow(0 2px 3px rgb(49 63 76 / 32%));
+  opacity: 0;
+  transform: scale(0.7);
 }
 .three-d-cursor[data-interactive="true"] .three-d-cursor-surface {
   opacity: 1;
-  transform: scale(1);
 }
 .three-d-cursor[data-pressed="true"] {
-  transform: translateY(1px) scale(0.96);
+  transform: scale(0.985);
+}
+.three-d-cursor[data-pressed="true"][data-interactive="true"] {
+  background: rgb(240 238 231 / 14%);
+  box-shadow:
+    0 2px 7px rgb(38 40 36 / 7%),
+    inset 0 1px 1px rgb(255 255 255 / 38%);
 }
 @media (pointer: coarse), (prefers-reduced-motion: reduce) {
   .three-d-cursor,

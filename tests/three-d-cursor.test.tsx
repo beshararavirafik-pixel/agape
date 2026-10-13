@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { JSDOM } from "jsdom";
 
-test("the small standard-shaped 3D pointer stays clear of controls and text fields", async () => {
+test("the rounded frosted pointer migrates into options and yields to the text caret", async () => {
   const dom = new JSDOM("<html><body></body></html>", {
     url: "http://localhost",
   });
@@ -32,6 +32,19 @@ test("the small standard-shaped 3D pointer stays clear of controls and text fiel
     </>,
   );
   const button = view.getByRole("button");
+  Object.defineProperty(button, "getBoundingClientRect", {
+    value: () => ({
+      left: 20,
+      top: 30,
+      width: 100,
+      height: 32,
+      right: 120,
+      bottom: 62,
+      x: 20,
+      y: 30,
+      toJSON() {},
+    }),
+  });
 
   fireEvent.pointerMove(button, {
     pointerType: "mouse",
@@ -40,10 +53,12 @@ test("the small standard-shaped 3D pointer stays clear of controls and text fiel
   });
   const cursor = view.container.querySelector<HTMLElement>(".three-d-cursor")!;
   assert.equal(cursor.dataset.interactive, "true");
-  assert.equal(cursor.style.left, "50px");
-  assert.equal(cursor.style.top, "40px");
-  assert.equal(cursor.style.width, "18px");
-  assert.equal(cursor.style.height, "24px");
+  assert.equal(cursor.dataset.morph, "shape");
+  assert.equal(cursor.style.left, "16px");
+  assert.equal(cursor.style.top, "26px");
+  assert.equal(cursor.style.width, "108px");
+  assert.equal(cursor.style.height, "40px");
+  assert.equal(cursor.style.borderRadius, "10.4px");
   assert.ok(cursor.querySelector(".three-d-cursor-surface"));
 
   fireEvent.pointerMove(view.getByRole("textbox"), {

@@ -8,6 +8,9 @@ const interactiveTargets =
   'a, button, [role="button"], [role="option"], [role="menuitem"], [role="tab"], select, summary, label, input[type="checkbox"], input[type="radio"]';
 const cursorWidth = 18;
 const cursorHeight = 24;
+const hoverPadding = 4;
+const maxMorphWidth = 320;
+const maxMorphHeight = 96;
 
 export default function ThreeDCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
@@ -24,18 +27,60 @@ export default function ThreeDCursor() {
       cursor.style.top = `${y}px`;
       cursor.style.width = `${cursorWidth}px`;
       cursor.style.height = `${cursorHeight}px`;
+      cursor.style.borderRadius = "8px";
+      cursor.dataset.morph = "arrow";
+    };
+
+    const migrateInto = (target: Element, x: number, y: number) => {
+      const rect = target.getBoundingClientRect();
+      const fits =
+        rect.width > 0 &&
+        rect.height > 0 &&
+        rect.width <= maxMorphWidth &&
+        rect.height <= maxMorphHeight;
+
+      cursor.dataset.interactive = "true";
+      if (!fits) {
+        cursor.dataset.morph = "dot";
+        cursor.style.left = `${x - 18}px`;
+        cursor.style.top = `${y - 18}px`;
+        cursor.style.width = "36px";
+        cursor.style.height = "36px";
+        cursor.style.borderRadius = "50%";
+        return;
+      }
+
+      const styles = window.getComputedStyle(target);
+      const targetRadius = Number.parseFloat(styles.borderTopLeftRadius) || 0;
+      const width = rect.width + hoverPadding * 2;
+      const height = rect.height + hoverPadding * 2;
+      const radius = Math.min(
+        Math.max(targetRadius + hoverPadding, Math.min(width, height) * 0.26),
+        width / 2,
+        height / 2,
+      );
+      cursor.dataset.morph = "shape";
+      cursor.style.left = `${rect.left - hoverPadding}px`;
+      cursor.style.top = `${rect.top - hoverPadding}px`;
+      cursor.style.width = `${width}px`;
+      cursor.style.height = `${height}px`;
+      cursor.style.borderRadius = `${radius}px`;
     };
 
     const update = (event: PointerEvent) => {
       if (event.pointerType === "touch") return;
-      position(event.clientX, event.clientY);
 
       const target = event.target instanceof Element ? event.target : null;
       const isTextEntry = Boolean(target?.closest(textTargets));
       cursor.dataset.hidden = String(isTextEntry || !target);
-      cursor.dataset.interactive = String(
-        !isTextEntry && Boolean(target?.closest(interactiveTargets)),
-      );
+      const interactive = !isTextEntry
+        ? target?.closest(interactiveTargets)
+        : null;
+      if (interactive) migrateInto(interactive, event.clientX, event.clientY);
+      else {
+        cursor.dataset.interactive = "false";
+        position(event.clientX, event.clientY);
+      }
     };
 
     const press = (event: PointerEvent) => {
@@ -70,6 +115,7 @@ export default function ThreeDCursor() {
       className="three-d-cursor"
       data-hidden="true"
       data-interactive="false"
+      data-morph="arrow"
       data-pressed="false"
       aria-hidden="true"
     >
