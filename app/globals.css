@@ -2625,12 +2625,12 @@ html.agape-3d-cursor
   opacity: 0;
 }
 .three-d-cursor[data-interactive="true"] {
-  border-color: rgb(255 255 255 / 72%);
+  border-color: rgb(255 255 255 / 90%);
   background: transparent;
   box-shadow:
-    0 0 0 1px rgb(31 39 46 / 22%),
-    0 5px 16px rgb(38 40 36 / 8%),
-    inset 0 1px 1px rgb(255 255 255 / 46%);
+    0 0 0 1px rgb(31 39 46 / 42%),
+    0 7px 16px rgb(31 39 46 / 18%),
+    0 2px 4px rgb(31 39 46 / 10%);
   transition:
     left 240ms cubic-bezier(0.22, 0.78, 0.22, 1),
     top 240ms cubic-bezier(0.22, 0.78, 0.22, 1),
@@ -2643,15 +2643,27 @@ html.agape-3d-cursor
 }
 .three-d-cursor-surface {
   position: absolute;
-  inset: 0;
-  border: 1px solid rgb(255 255 255 / 38%);
+  inset: -1px;
+  padding: 3px;
   border-radius: inherit;
-  background: transparent;
-  box-shadow:
-    0 4px 12px rgb(38 40 36 / 7%),
-    inset 0 1px 1px rgb(255 255 255 / 48%);
+  background: linear-gradient(
+    145deg,
+    rgb(255 255 255 / 94%),
+    rgb(104 114 120 / 52%) 48%,
+    rgb(255 255 255 / 84%)
+  );
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
   opacity: 0;
-  transition: opacity 180ms ease;
+  transform: scale(1.035);
+  transition:
+    opacity 180ms ease,
+    transform 240ms cubic-bezier(0.22, 0.78, 0.22, 1);
 }
 .three-d-cursor[data-interactive="true"] .three-d-cursor-glass,
 .three-d-cursor[data-interactive="true"] svg {
@@ -2661,6 +2673,7 @@ html.agape-3d-cursor
 }
 .three-d-cursor[data-interactive="true"] .three-d-cursor-surface {
   opacity: 1;
+  transform: scale(1);
 }
 .three-d-cursor[data-pressed="true"] {
   transform: scale(0.985);
@@ -2668,9 +2681,8 @@ html.agape-3d-cursor
 .three-d-cursor[data-pressed="true"][data-interactive="true"] {
   background: transparent;
   box-shadow:
-    0 0 0 1px rgb(31 39 46 / 32%),
-    0 2px 7px rgb(38 40 36 / 7%),
-    inset 0 1px 1px rgb(255 255 255 / 38%);
+    0 0 0 1px rgb(31 39 46 / 48%),
+    0 2px 6px rgb(31 39 46 / 16%);
 }
 @media (pointer: coarse), (prefers-reduced-motion: reduce) {
   .three-d-cursor,
