@@ -43,12 +43,8 @@ export default function ThreeDCursor() {
 
       cursor.dataset.interactive = "true";
       if (!fits) {
-        cursor.dataset.morph = "dot";
-        cursor.style.left = `${x - 18}px`;
-        cursor.style.top = `${y - 18}px`;
-        cursor.style.width = "36px";
-        cursor.style.height = "36px";
-        cursor.style.borderRadius = "50%";
+        cursor.dataset.interactive = "false";
+        position(x, y);
         return;
       }
 
@@ -73,7 +69,10 @@ export default function ThreeDCursor() {
       if (event.pointerType === "touch") return;
 
       const target = event.target instanceof Element ? event.target : null;
-      const isTextEntry = Boolean(target?.closest(textTargets));
+      const isTextEntry = Boolean(
+        target?.closest(textTargets) ||
+        target?.closest(".search")?.querySelector(textTargets),
+      );
       cursor.dataset.hidden = String(isTextEntry || !target);
       const interactive = !isTextEntry
         ? target?.closest(interactiveTargets)

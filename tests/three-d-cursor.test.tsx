@@ -28,11 +28,16 @@ test("the rounded frosted pointer migrates into options and yields to the text c
     <>
       <button type="button">Add guest</button>
       <input aria-label="Guest name" />
+      <label className="search" data-testid="search-container">
+        <span data-testid="search-icon">⌕</span>
+        <input type="search" aria-label="Search guests" />
+      </label>
       <ThreeDCursor />
     </>,
   );
   const button = view.getByRole("button");
   Object.defineProperty(button, "getBoundingClientRect", {
+    configurable: true,
     value: () => ({
       left: 20,
       top: 30,
@@ -61,13 +66,33 @@ test("the rounded frosted pointer migrates into options and yields to the text c
   assert.equal(cursor.style.borderRadius, "10.4px");
   assert.ok(cursor.querySelector(".three-d-cursor-surface"));
 
-  fireEvent.pointerMove(view.getByRole("textbox"), {
+  fireEvent.pointerMove(view.getByRole("textbox", { name: "Guest name" }), {
     pointerType: "mouse",
     clientX: 60,
     clientY: 45,
   });
   assert.equal(cursor.dataset.hidden, "true");
   assert.equal(cursor.dataset.interactive, "false");
+
+  for (const area of [
+    view.getByRole("searchbox"),
+    view.getByTestId("search-icon"),
+    view.getByTestId("search-container"),
+  ]) {
+    fireEvent.pointerMove(button);
+    fireEvent.pointerMove(area);
+    assert.equal(cursor.dataset.hidden, "true");
+    assert.equal(cursor.dataset.interactive, "false");
+  }
+
+  Object.defineProperty(button, "getBoundingClientRect", {
+    configurable: true,
+    value: () => ({ left: 20, top: 30, width: 500, height: 120 }),
+  });
+  fireEvent.pointerMove(button);
+  assert.equal(cursor.dataset.hidden, "false");
+  assert.equal(cursor.dataset.interactive, "false");
+  assert.equal(cursor.dataset.morph, "arrow");
 
   cleanup();
   assert.equal(
