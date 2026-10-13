@@ -5952,21 +5952,21 @@ button.add-circle:hover {
   font-size: 12px;
 }
 
-/* Inline family details preserve the alphabetical order of the card flow. */
+/* Stable alphabetical columns share one bottom edge as a family expands. */
 .household-list {
   grid-auto-rows: auto;
-  grid-auto-flow: row;
-  align-items: start;
+  align-items: stretch;
 }
-.household-list[data-inline-grid="true"] {
-  grid-auto-rows: var(--family-row-height);
+.family-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
 }
-.household-list > .household-card {
+.family-column > .household-card {
+  flex: none;
   height: fit-content;
-  align-self: start;
-}
-.household-list .family-card-header {
-  min-height: calc(var(--family-row-height, 2px) - 2px);
 }
 .household-card .family-card-header .household-heading {
   min-height: 80px;
@@ -6029,8 +6029,8 @@ button.add-circle:hover {
   grid-template-rows: 0fr;
   opacity: 0;
   visibility: hidden;
-  transition: grid-template-rows 360ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 200ms ease, visibility 0s 360ms;
+  transition: grid-template-rows 480ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 200ms ease, visibility 0s 480ms;
 }
 .family-expansion[data-open="true"] {
   grid-template-rows: 1fr;
