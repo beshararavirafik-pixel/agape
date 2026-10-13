@@ -55,6 +55,12 @@ test("dragging moves one guest, preserves RSVP/seats, and supports the RSVP menu
   fireEvent.click(target);
   assert.equal(source.getAttribute("aria-expanded"), "false");
   assert.equal(target.getAttribute("aria-expanded"), "true");
+  assert.equal(
+    document.getElementById(target.getAttribute("aria-controls")!)
+      ?.closest("article"),
+    destination,
+    "members expand inside their original family card",
+  );
   fireEvent.click(source);
   assert.equal(target.getAttribute("aria-expanded"), "false");
   assert.equal(source.getAttribute("aria-expanded"), "true");
