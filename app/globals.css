@@ -2555,7 +2555,7 @@ td select {
   }
 }
 
-/* A dark frosted cursor that melts into hovered controls. */
+/* Translucent glass clipped to the rounded arrow, with a fine contrasting rim. */
 html.agape-3d-cursor,
 html.agape-3d-cursor body,
 html.agape-3d-cursor body * {
@@ -2594,6 +2594,17 @@ html.agape-3d-cursor
   transition: opacity 100ms ease;
   will-change: left, top, width, height, border-radius;
 }
+.three-d-cursor-glass {
+  position: absolute;
+  inset: 0;
+  clip-path: url(#cursor-glass-clip);
+  background: rgb(31 39 46 / 42%);
+  backdrop-filter: blur(3px) saturate(85%);
+  -webkit-backdrop-filter: blur(3px) saturate(85%);
+  transition:
+    opacity 130ms ease,
+    transform 140ms ease;
+}
 .three-d-cursor svg {
   position: absolute;
   inset: 0;
@@ -2601,9 +2612,7 @@ html.agape-3d-cursor
   width: 100%;
   height: 100%;
   overflow: visible;
-  filter: drop-shadow(0 0 1px rgb(10 15 19 / 88%))
-    drop-shadow(0 0 1px rgb(255 255 255 / 88%))
-    drop-shadow(0 2px 2px rgb(14 19 23 / 30%));
+  filter: drop-shadow(0 1px 1px rgb(20 27 32 / 25%));
   transition:
     filter 160ms ease,
     opacity 130ms ease,
@@ -2613,13 +2622,12 @@ html.agape-3d-cursor
   opacity: 0;
 }
 .three-d-cursor[data-interactive="true"] {
-  border-color: rgb(255 255 255 / 76%);
-  background: rgb(31 40 47 / 15%);
+  border-color: rgb(255 255 255 / 42%);
+  background: rgb(31 39 46 / 6%);
   box-shadow:
-    0 0 0 1px rgb(18 24 29 / 58%),
-    0 5px 16px rgb(0 0 0 / 18%),
-    inset 0 1px 1px rgb(255 255 255 / 55%);
-  backdrop-filter: blur(2px) saturate(125%);
+    0 5px 16px rgb(38 40 36 / 8%),
+    inset 0 1px 1px rgb(255 255 255 / 46%);
+  backdrop-filter: blur(0.8px);
   transition:
     left 240ms cubic-bezier(0.22, 0.78, 0.22, 1),
     top 240ms cubic-bezier(0.22, 0.78, 0.22, 1),
@@ -2633,21 +2641,22 @@ html.agape-3d-cursor
 .three-d-cursor-surface {
   position: absolute;
   inset: 0;
-  border: 1px solid rgb(255 255 255 / 58%);
+  border: 1px solid rgb(255 255 255 / 38%);
   border-radius: inherit;
   background: linear-gradient(
     142deg,
-    rgb(39 50 58 / 20%),
-    rgb(24 33 40 / 12%) 58%,
-    rgb(69 84 94 / 18%)
+    rgb(255 255 255 / 19%),
+    rgb(255 255 255 / 8%) 58%,
+    rgb(221 227 231 / 13%)
   );
   box-shadow:
-    0 4px 12px rgb(0 0 0 / 12%),
-    inset 0 1px 1px rgb(255 255 255 / 58%);
-  backdrop-filter: blur(2px) saturate(125%);
+    0 4px 12px rgb(38 40 36 / 7%),
+    inset 0 1px 1px rgb(255 255 255 / 48%);
+  backdrop-filter: blur(0.8px);
   opacity: 0;
   transition: opacity 180ms ease;
 }
+.three-d-cursor[data-interactive="true"] .three-d-cursor-glass,
 .three-d-cursor[data-interactive="true"] svg {
   opacity: 0;
   transform: scale(0.7);
@@ -2659,7 +2668,7 @@ html.agape-3d-cursor
   transform: scale(0.985);
 }
 .three-d-cursor[data-pressed="true"][data-interactive="true"] {
-  background: rgb(16 24 29 / 22%);
+  background: rgb(240 238 231 / 14%);
   box-shadow:
     0 2px 7px rgb(38 40 36 / 7%),
     inset 0 1px 1px rgb(255 255 255 / 38%);
@@ -2667,6 +2676,7 @@ html.agape-3d-cursor
 @media (pointer: coarse), (prefers-reduced-motion: reduce) {
   .three-d-cursor,
   .three-d-cursor svg,
+  .three-d-cursor-glass,
   .three-d-cursor-surface {
     transition: none;
   }

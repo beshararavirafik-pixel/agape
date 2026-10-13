@@ -11,6 +11,8 @@ const cursorHeight = 24;
 const hoverPadding = 4;
 const maxMorphWidth = 320;
 const maxMorphHeight = 96;
+const arrowPath =
+  "M1.5 3.1Q1.5 .9 3.2 2.2L17.4 13.3Q19.3 14.8 17 15.3L11.5 16.5Q10.5 16.7 11 17.7L14.1 23.7Q15 25.6 13.1 26.4L12.4 26.7Q10.5 27.5 9.7 25.7L6.9 19.2Q6.4 18.2 5.6 19.1L3.5 21.6Q1.5 23.7 1.5 20.8Z";
 
 export default function ThreeDCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
@@ -119,65 +121,40 @@ export default function ThreeDCursor() {
       data-pressed="false"
       aria-hidden="true"
     >
+      <span className="three-d-cursor-glass" />
       <span className="three-d-cursor-surface" />
-      <svg viewBox="0 0 20 28" focusable="false">
+      <svg viewBox="0 0 20 28" preserveAspectRatio="none" focusable="false">
         <defs>
-          <linearGradient id="cursor-chrome" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#fff" stopOpacity="0.96" />
-            <stop offset="0.22" stopColor="#dce6ec" stopOpacity="0.84" />
-            <stop offset="0.48" stopColor="#fff" stopOpacity="0.94" />
-            <stop offset="0.76" stopColor="#c8d5de" stopOpacity="0.84" />
-            <stop offset="1" stopColor="#fff" stopOpacity="0.96" />
+          <clipPath id="cursor-glass-clip" clipPathUnits="objectBoundingBox">
+            <path d={arrowPath} transform="scale(.05 .0357142857)" />
+          </clipPath>
+          <linearGradient id="cursor-edge" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#fff" stopOpacity="0.94" />
+            <stop offset="0.5" stopColor="#e1e6e9" stopOpacity="0.52" />
+            <stop offset="1" stopColor="#fff" stopOpacity="0.86" />
           </linearGradient>
-          <linearGradient id="cursor-face" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#34434d" stopOpacity="0.92" />
-            <stop offset="0.52" stopColor="#202a31" stopOpacity="0.84" />
-            <stop offset="1" stopColor="#465660" stopOpacity="0.9" />
+          <linearGradient id="cursor-sheen" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#fff" stopOpacity="0.24" />
+            <stop offset="0.55" stopColor="#fff" stopOpacity="0.03" />
+            <stop offset="1" stopColor="#fff" stopOpacity="0.12" />
           </linearGradient>
-          <filter
-            id="cursor-shadow"
-            x="-50%"
-            y="-40%"
-            width="200%"
-            height="210%"
-          >
-            <feGaussianBlur stdDeviation="0.65" />
-          </filter>
         </defs>
         <path
-          d="M1.4 1.4Q1 .5 2 1.2l16 12.6q1.5 1.1-.4 1.6l-7.5 1.8 3.7 7.5q.7 1.5-.8 2.2l-1.6.7q-1.5.7-2.2-.8l-3.7-7.8-3.1 3.4q-1.4 1.5-1.4-.6Z"
-          transform="translate(.45 .8)"
-          fill="#687c8b"
-          opacity=".16"
-          filter="url(#cursor-shadow)"
+          d={arrowPath}
+          fill="none"
+          stroke="#20272c"
+          strokeOpacity=".34"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
         />
         <path
-          d="M1.4 1.4Q1 .5 2 1.2l16 12.6q1.5 1.1-.4 1.6l-7.5 1.8 3.7 7.5q.7 1.5-.8 2.2l-1.6.7q-1.5.7-2.2-.8l-3.7-7.8-3.1 3.4q-1.4 1.5-1.4-.6Z"
-          fill="url(#cursor-face)"
-          stroke="url(#cursor-chrome)"
-          strokeWidth="1.05"
+          d={arrowPath}
+          fill="url(#cursor-sheen)"
+          stroke="url(#cursor-edge)"
+          strokeWidth=".9"
           strokeLinejoin="round"
           strokeLinecap="round"
         />
-        <path
-          d="M2.7 3.1 2.6 18.4l3-3.1 3.1-.8Z"
-          fill="url(#cursor-face)"
-          opacity=".82"
-        />
-        <path
-          d="m5.9 15.4 3.5 7.4 1.8-.8-3.3-7.1Z"
-          fill="url(#cursor-chrome)"
-          opacity=".9"
-        />
-        <path
-          d="m3.2 2.9 12.9 10.2"
-          fill="none"
-          stroke="#fff"
-          strokeWidth=".65"
-          strokeLinecap="round"
-          opacity=".7"
-        />
-        <path d="m10 14.5 5.8.2-5.5 1.2Z" fill="#fff" opacity=".68" />
       </svg>
     </div>
   );
