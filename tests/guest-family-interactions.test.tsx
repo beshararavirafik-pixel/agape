@@ -46,6 +46,17 @@ test("dragging moves one guest, preserves RSVP/seats, and supports the RSVP menu
     return <GuestList state={state} change={setState} edit={() => {}} />;
   }
   render(<Harness />);
+  const renderedFamilyNames = Array.from(
+    document.querySelectorAll<HTMLElement>(
+      ".household-card .household-heading strong",
+    ),
+    (heading) => heading.textContent,
+  );
+  assert.deepEqual(
+    renderedFamilyNames,
+    [...renderedFamilyNames].sort((a, b) => a!.localeCompare(b!)),
+    "family cards follow alphabetical reading order in the DOM",
+  );
   const source = screen.getByRole("button", { name: /Source family/ });
   const target = screen.getByRole("button", { name: /Target family/ });
   const destination = target.closest("article")!;
@@ -56,7 +67,8 @@ test("dragging moves one guest, preserves RSVP/seats, and supports the RSVP menu
   assert.equal(source.getAttribute("aria-expanded"), "false");
   assert.equal(target.getAttribute("aria-expanded"), "true");
   assert.equal(
-    document.getElementById(target.getAttribute("aria-controls")!)
+    document
+      .getElementById(target.getAttribute("aria-controls")!)
       ?.closest("article"),
     destination,
     "members expand inside their original family card",
@@ -85,6 +97,18 @@ test("dragging moves one guest, preserves RSVP/seats, and supports the RSVP menu
     initial.guests.map((g) => g.rsvp),
   );
   assert.equal(destination.classList.contains("is-drop-target"), false);
+  fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+  assert.equal(
+    invitationFamilies(current).find((f) => f.title === "Target family")!
+      .members.length,
+    2,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Redo" }));
+  assert.equal(
+    invitationFamilies(current).find((f) => f.title === "Target family")!
+      .members.length,
+    3,
+  );
   const trigger = screen.getByRole("button", {
     name: `RSVP for ${moved.name}`,
   });
@@ -93,6 +117,13 @@ test("dragging moves one guest, preserves RSVP/seats, and supports the RSVP menu
   fireEvent.keyDown(document.activeElement!, { key: "ArrowDown" });
   assert.equal(document.activeElement?.getAttribute("role"), "option");
   fireEvent.click(within(menu).getByRole("option", { name: "Accepted" }));
+  assert.equal(current.guests.find((g) => g.id === moved.id)?.rsvp, "accepted");
+  fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+  assert.equal(
+    current.guests.find((g) => g.id === moved.id)?.rsvp,
+    initial.guests.find((g) => g.id === moved.id)?.rsvp,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Redo" }));
   assert.equal(current.guests.find((g) => g.id === moved.id)?.rsvp, "accepted");
   assert.equal(screen.queryByRole("listbox"), null);
   assert.equal(document.activeElement, trigger);

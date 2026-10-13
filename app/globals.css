@@ -2331,6 +2331,32 @@ td select {
 .guest-undo span {
   flex: 1;
 }
+.guest-history {
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid #dedbd0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 4px 16px rgba(35, 35, 27, 0.06);
+}
+.guest-history span {
+  flex: 0 1 auto;
+  padding-inline: 4px 10px;
+  color: #77756c;
+}
+.guest-history button {
+  min-width: 66px;
+  border: 1px solid #dedbd0;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+}
+.guest-history button:disabled {
+  opacity: 0.42;
+  cursor: default;
+}
 .household-card {
   border-bottom: 1px solid var(--line);
 }
@@ -4960,6 +4986,10 @@ html:active-view-transition .content {
 .household-list {
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 12px;
+  grid-auto-flow: row;
+  grid-auto-rows: auto;
+  align-items: start;
+  overflow-anchor: none;
 }
 .household-card {
   border: 1px solid #dedbd080;
@@ -5977,23 +6007,7 @@ button.add-circle:hover {
   font-size: 12px;
 }
 
-/* Keep natural column heights and consistent gutters around inline details. */
-.household-list {
-  grid-auto-rows: auto;
-  align-items: start;
-  overflow-anchor: none;
-}
-.family-column {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: 12px;
-  min-width: 0;
-}
-.family-column > .household-card {
-  flex: none;
-  height: fit-content;
-}
+/* Each alphabetical row grows with its inline details, carrying later rows smoothly. */
 .household-list .family-card-header {
   min-height: var(--family-header-height, 0px);
 }
@@ -6001,6 +6015,9 @@ button.add-circle:hover {
   min-height: 80px;
   padding-top: 12px;
   padding-bottom: 12px;
+}
+.household-card .household-heading svg:last-child {
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .household-card .guest-rows tr {
   grid-template-columns: 20px minmax(0, 1fr) auto 28px;
@@ -6059,9 +6076,9 @@ button.add-circle:hover {
   opacity: 0;
   visibility: hidden;
   transition:
-    grid-template-rows 480ms cubic-bezier(0.4, 0, 0.2, 1),
+    grid-template-rows 420ms cubic-bezier(0.22, 1, 0.36, 1),
     opacity 200ms ease,
-    visibility 0s 480ms;
+    visibility 0s 420ms;
 }
 .family-expansion[data-open="true"] {
   grid-template-rows: 1fr;
