@@ -1,5 +1,7 @@
 "use client";
-import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import type { DragEvent } from "react";
+import RsvpSelect from "@/components/rsvp-select";
 import {
   Search,
   Trash2,
@@ -52,46 +54,21 @@ export default function GuestList({
     [existingMember, setExistingMember] = useState(""),
     [memberRole, setMemberRole] = useState("Relative"),
     [removed, setRemoved] = useState<RemovedGuests | null>(null),
-    [expanded, setExpanded] = useState<string[]>([]);
-  const familyList = useRef<HTMLDivElement>(null);
-  const previousCards = useRef<Map<Element, DOMRect>>(new Map());
-  function sizeFamilyCards() {
-    const list = familyList.current;
-    if (!list || typeof ResizeObserver === "undefined") return;
-    list.dataset.flow = "true";
-    Array.from(list.children).forEach((card) => {
-      const element = card as HTMLElement;
-      element.style.gridRowEnd = `span ${Math.ceil((element.offsetHeight + 12) / 13)}`;
-    });
-  }
-  useEffect(() => {
-    const list = familyList.current;
-    if (!list || typeof ResizeObserver === "undefined") return;
-    const observer = new ResizeObserver(sizeFamilyCards);
-    Array.from(list.children).forEach((card) => observer.observe(card));
-    sizeFamilyCards();
-    return () => observer.disconnect();
-  }, [view, query, group, rsvp, seating, state.guests]);
+    [expanded, setExpanded] = useState<string[]>([]),
+    [revealedFamilies, setRevealedFamilies] = useState<string[]>([]),
+    [draggedGuest, setDraggedGuest] = useState<string | null>(null),
+    [dropFamily, setDropFamily] = useState<string | null>(null);
+  const dragGuestId = useRef<string | null>(null);
   function toggleFamily(name: string) {
-    previousCards.current = new Map(
-      Array.from(familyList.current?.children || []).map((card) => [card, card.getBoundingClientRect()]),
+    setRevealedFamilies((items) =>
+      items.includes(name) ? items : [...items, name],
     );
-    setExpanded((items) => items.includes(name) ? items.filter((id) => id !== name) : [...items, name]);
+    setExpanded((items) =>
+      items.includes(name)
+        ? items.filter((id) => id !== name)
+        : [...items, name],
+    );
   }
-  useLayoutEffect(() => {
-    sizeFamilyCards();
-    const before = previousCards.current;
-    previousCards.current = new Map();
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
-    before.forEach((old, card) => {
-      const next = card.getBoundingClientRect();
-      if (!next.width || !next.height || !old.width || !old.height || !card.animate) return;
-      card.animate([
-        { transform: `translate(${old.left - next.left}px, ${old.top - next.top}px) scale(${old.width / next.width}, ${old.height / next.height})`, transformOrigin: "top left" },
-        { transform: "translate(0, 0) scale(1, 1)", transformOrigin: "top left" },
-      ], { duration: 460, easing: "cubic-bezier(.22, 1.18, .36, 1)" });
-    });
-  }, [expanded]);
   const deletePanel = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!deleting && !familyPrimary && !addingToFamily && !renamingFamily)
@@ -218,11 +195,81 @@ export default function GuestList({
       a.includes(id) ? a.filter((v) => v !== id) : [...a, id],
     );
   }
+  function startGuestDrag(event: DragEvent<HTMLElement>, guest: Guest) {
+    dragGuestId.current = guest.id;
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("application/x-agape-guest", guest.id);
+    event.dataTransfer.setData("text/plain", guest.name);
+    setDraggedGuest(guest.id);
+  }
+  function endGuestDrag() {
+    dragGuestId.current = null;
+    setDraggedGuest(null);
+    setDropFamily(null);
+  }
+  function canDropGuest(primaryId: string) {
+    const id = dragGuestId.current;
+    return (
+      id &&
+      families.some(
+        (family) =>
+          family.id === primaryId &&
+          !family.members.some((guest) => guest.id === id),
+      )
+    );
+  }
+  function overFamily(event: DragEvent<HTMLElement>, primaryId: string) {
+    if (!canDropGuest(primaryId)) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setDropFamily(primaryId);
+  }
+  function leaveFamily(event: DragEvent<HTMLElement>, primaryId: string) {
+    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+      setDropFamily((current) => (current === primaryId ? null : current));
+    }
+  }
+  function dropGuest(event: DragEvent<HTMLElement>, primaryId: string) {
+    if (!canDropGuest(primaryId)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const guest = state.guests.find((g) => g.id === dragGuestId.current);
+    const family = families.find((f) => f.id === primaryId);
+    if (guest && family) {
+      change(addGuestToFamily(state, primaryId, guest, "Relative"));
+      setRevealedFamilies((items) =>
+        items.includes(primaryId) ? items : [...items, primaryId],
+      );
+      setExpanded((items) =>
+        items.includes(primaryId) ? items : [...items, primaryId],
+      );
+      setFamilyNotice(`${guest.name} moved to ${family.title}.`);
+    }
+    endGuestDrag();
+  }
   function row(g: Guest, relation?: string) {
     const family = families.find((f) => f.members.some((m) => m.id === g.id))!;
     return (
       <Fragment key={g.id}>
-        <tr data-letter={firstLetter(g.name)} className="alphabet-target">
+        <tr
+          data-letter={firstLetter(g.name)}
+          className={`alphabet-target${view === "guests" && dropFamily === family.id ? " is-drop-target" : ""}`}
+          onDragOver={
+            view === "guests"
+              ? (event) => overFamily(event, family.id)
+              : undefined
+          }
+          onDragLeave={
+            view === "guests"
+              ? (event) => leaveFamily(event, family.id)
+              : undefined
+          }
+          onDrop={
+            view === "guests"
+              ? (event) => dropGuest(event, family.id)
+              : undefined
+          }
+        >
           <td>
             <input
               type="checkbox"
@@ -235,7 +282,11 @@ export default function GuestList({
             <button
               className="guest-identity"
               aria-label={`Open ${g.name}`}
-              title={g.name}
+              title={`Drag ${g.name} onto another family, or click to view details`}
+              draggable
+              onDragStart={(event) => startGuestDrag(event, g)}
+              onDragEnd={endGuestDrag}
+              data-dragging={draggedGuest === g.id}
               aria-expanded={openedGuest === g.id}
               onClick={() => setOpenedGuest(openedGuest === g.id ? null : g.id)}
             >
@@ -256,20 +307,11 @@ export default function GuestList({
             </button>
           </td>
           <td>
-            <select
-              aria-label={`RSVP for ${g.name}`}
-              className={`rsvp-select ${g.rsvp}`}
+            <RsvpSelect
+              label={`RSVP for ${g.name}`}
               value={g.rsvp}
-              onChange={(e) =>
-                change(
-                  setGuestRsvp(state, [g.id], e.target.value as Guest["rsvp"]),
-                )
-              }
-            >
-              <option value="pending">Pending</option>
-              <option value="accepted">Accepted</option>
-              <option value="declined">Declined</option>
-            </select>
+              onChange={(value) => change(setGuestRsvp(state, [g.id], value))}
+            />
           </td>
           <td className="guest-table-name">
             {seatMap.get(g.id) || "Unseated"}
@@ -578,7 +620,6 @@ export default function GuestList({
           ) : (
             <div
               key="families-view"
-              ref={familyList}
               className="household-list guest-view-surface"
             >
               {shownFamilies.map(
@@ -592,7 +633,10 @@ export default function GuestList({
                         ...members.map((g) => firstLetter(g.name)),
                       ]),
                     ).join(" ")}
-                    className={`household-card alphabet-target ${expanded.includes(name) ? "is-expanded" : ""} ${members.some((g) => selected.includes(g.id)) ? "is-selected" : ""}`}
+                    className={`household-card alphabet-target ${expanded.includes(name) ? "is-expanded" : ""} ${members.some((g) => selected.includes(g.id)) ? "is-selected" : ""} ${dropFamily === name ? "is-drop-target" : ""}`}
+                    onDragOver={(event) => overFamily(event, name)}
+                    onDragLeave={(event) => leaveFamily(event, name)}
+                    onDrop={(event) => dropGuest(event, name)}
                   >
                     <div className="family-card-header">
                       <input
@@ -622,6 +666,10 @@ export default function GuestList({
                       />
                       <button
                         className="household-heading"
+                        draggable
+                        title={`Drag ${primary.name} onto another family`}
+                        onDragStart={(event) => startGuestDrag(event, primary)}
+                        onDragEnd={endGuestDrag}
                         aria-expanded={expanded.includes(name)}
                         onClick={() => toggleFamily(name)}
                       >
@@ -658,41 +706,51 @@ export default function GuestList({
                         <ChevronDown size={18} />
                       </button>
                     </div>
-                    {expanded.includes(name) && (
-                      <div className="table-scroll">
-                        <table className="guest-rows">
-                          <tbody>
-                            {members.map((g) => row(g, relationship(g.id)))}
-                          </tbody>
-                        </table>
-                        <div className="family-local-actions">
-                          {" "}
-                          <button
-                            aria-label="Add to family"
-                            title="Add to family"
-                            className="add-family-member add-circle"
-                            onClick={() => {
-                              setAddingToFamily(primary.id);
-                              setAddMode("new");
-                              setMemberName("");
-                              setExistingMember("");
-                              setMemberRole("Relative");
-                            }}
-                          >
-                            <Plus size={18} />
-                          </button>
-                          <button
-                            className="add-family-member"
-                            onClick={() => {
-                              setRenamingFamily(primary.id);
-                              setFamilyName(title);
-                            }}
-                          >
-                            Rename family
-                          </button>
-                        </div>
+                    <div
+                      className="family-expansion"
+                      data-open={expanded.includes(name)}
+                      aria-hidden={!expanded.includes(name)}
+                      inert={!expanded.includes(name)}
+                    >
+                      <div className="family-expansion-inner">
+                        {(expanded.includes(name) ||
+                          revealedFamilies.includes(name)) && (
+                          <div className="table-scroll">
+                            <table className="guest-rows">
+                              <tbody>
+                                {members.map((g) => row(g, relationship(g.id)))}
+                              </tbody>
+                            </table>
+                            <div className="family-local-actions">
+                              {" "}
+                              <button
+                                aria-label="Add to family"
+                                title="Add to family"
+                                className="add-family-member add-circle"
+                                onClick={() => {
+                                  setAddingToFamily(primary.id);
+                                  setAddMode("new");
+                                  setMemberName("");
+                                  setExistingMember("");
+                                  setMemberRole("Relative");
+                                }}
+                              >
+                                <Plus size={18} />
+                              </button>
+                              <button
+                                className="add-family-member"
+                                onClick={() => {
+                                  setRenamingFamily(primary.id);
+                                  setFamilyName(title);
+                                }}
+                              >
+                                Rename family
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </article>
                 ),
               )}

@@ -5926,8 +5926,25 @@ button.add-circle:hover {
 .household-card .family-local-actions .add-circle {
   width: 30px;
   height: 30px;
+  min-width: 30px;
+  max-width: 30px;
   min-height: 30px;
+  flex: 0 0 30px;
+  border-radius: 50%;
   padding: 0;
+}
+.guest-identity[draggable="true"],
+.household-heading[draggable="true"] {
+  cursor: grab;
+}
+.guest-identity[data-dragging="true"] {
+  opacity: 0.55;
+}
+.household-card.is-drop-target,
+.guest-rows tr.is-drop-target {
+  background: rgba(255, 255, 255, 0.85);
+  outline: 2px solid #9b9380;
+  outline-offset: -2px;
 }
 .household-card .family-local-actions button:not(.add-circle) {
   min-height: 30px;
@@ -5935,14 +5952,10 @@ button.add-circle:hover {
   font-size: 12px;
 }
 
-/* Fit cards independently while preserving the directory's reading order. */
-.household-list[data-flow="true"] {
-  grid-auto-rows: 1px;
-  gap: 12px;
-}
-.household-list[data-flow="true"] > .household-card {
-  height: fit-content;
-  align-self: start;
+/* Family cards keep a shared row baseline when one is expanded. */
+.household-list {
+  grid-auto-rows: auto;
+  align-items: start;
 }
 .household-card .family-card-header .household-heading {
   min-height: 80px;
@@ -5989,6 +6002,102 @@ button.add-circle:hover {
     min-height: 72px;
   }
 }
+/* Keep family headers still while their details open and close. */
+.household-card .household-heading > span:nth-child(2) {
+  display: block;
+}
+.household-card .household-heading .family-size,
+.household-card .household-heading .family-rsvp {
+  margin-top: 4px;
+}
+.household-card .household-heading:active {
+  transform: none;
+}
+.family-expansion {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition: grid-template-rows 320ms cubic-bezier(0.2, 0.65, 0.3, 1),
+    opacity 200ms ease, visibility 0s 320ms;
+}
+.family-expansion[data-open="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+.family-expansion-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+.family-expansion .table-scroll {
+  padding: 0 12px 12px;
+  overflow: visible;
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .family-expansion,
+  .household-card .household-heading svg:last-child {
+    transition: none;
+  }
+}
+
+.household-card .guest-rows .rsvp-trigger,
+.guest-rows .rsvp-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  min-height: 30px;
+  border: 1px solid rgba(180, 175, 161, 0.3);
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.rsvp-dot {
+  width: 5px;
+  height: 5px;
+  flex: 0 0 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.rsvp-menu {
+  position: fixed;
+  z-index: 1500;
+  width: 172px;
+  max-width: calc(100vw - 24px);
+  padding: 5px;
+  border-radius: 14px;
+  border: 1px solid rgba(200, 195, 181, 0.55);
+  background: rgba(252, 251, 248, 0.96);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 8px 24px rgba(40, 41, 35, 0.1);
+}
+.rsvp-menu button {
+  width: 100%;
+  min-height: 38px;
+  justify-content: flex-start;
+  gap: 9px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  font-size: 13px;
+}
+.rsvp-menu button > span:nth-child(2) {
+  flex: 1;
+  text-align: left;
+}
+.rsvp-menu button:is(:hover, :focus-visible),
+.rsvp-menu button[aria-selected="true"] {
+  background: #eeece5;
+  outline-offset: 1px;
+}
+.rsvp-menu .pending { color: #8c7b55; }
+.rsvp-menu .accepted { color: #667459; }
+.rsvp-menu .declined { color: #946e66; }
+
 /* Private guest invitation: a calm, continuous page on every screen. */
 .invitee-page {
   max-width: 800px;

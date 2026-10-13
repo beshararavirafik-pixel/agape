@@ -90,9 +90,10 @@ test("guest assignment sync, decline unseating, guest creation and device persis
   fireEvent.click(screen.getByRole("button", { name: /^Guests$/ }));
   const row = screen.getByRole("row", { name: /Amelia Carter/ });
   assert.ok(within(row).getByText("Table 2"));
-  fireEvent.change(within(row).getByRole("combobox"), {
-    target: { value: "declined" },
-  });
+  fireEvent.click(
+    within(row).getByRole("button", { name: "RSVP for Amelia Carter" }),
+  );
+  fireEvent.click(within(screen.getByRole("listbox", { name: "RSVP for Amelia Carter" })).getByRole("option", { name: "Declined" }));
   assert.ok(within(row).getByText("Unseated"));
   fireEvent.click(screen.getByRole("button", { name: "Add guest" }));
   fireEvent.change(screen.getByLabelText("Full name"), {
